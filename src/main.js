@@ -1,7 +1,8 @@
 import util from './util';
 import createFilter from './make-filter';
 import getCard from './get-card';
-import createCard from './make-card';
+import Card from './card';
+import CardDetails from './card-details';
 
 const FILTERS_CONTAINER = document.querySelector(`.main-navigation`);
 const CONTAINERS = document.querySelectorAll(`.films-list__container`);
@@ -49,16 +50,53 @@ function onFilterClick(evt) {
 
 function filteredBy(type, container, count) {
   container.innerHTML = ``;
+  let fragment = document.createDocumentFragment();
   const template = cardsData.slice();
   const sortTemplate = template.sort((a, b) => b[type] - a[type]);
-  const result = sortTemplate.slice(0, count).map((item) => createCard(item));;
-  container.innerHTML = result.join(``);
+  const fillCards = sortTemplate.slice(0, count).map((item) => item);
+  fillCards.forEach((item) => {
+    const card = new Card(item);
+    const cardDetails = new CardDetails(item);
+    card.render();
+
+    card.onClick = () => {
+      cardDetails.render();
+      document.body.appendChild(cardDetails.element);
+    };
+
+    cardDetails.onClick = () => {
+      document.body.removeChild(cardDetails.element);
+      cardDetails.unrender();
+    };
+
+    fragment.appendChild(card.element);
+  });
+  container.appendChild(fragment);
 }
 
 function createCards(container, data) {
   container.innerHTML = ``;
-  const template = data.map((item) => createCard(item));
-  container.innerHTML = template.join(``);
+  let fragment = document.createDocumentFragment();
+  const fillCards = data.map((item) => item);
+  fillCards.forEach((item) => {
+    const card = new Card(item);
+    const cardDetails = new CardDetails(item);
+    card.render();
+
+    card.onClick = () => {
+      cardDetails.render();
+      document.body.appendChild(cardDetails.element);
+    };
+
+    cardDetails.onClick = () => {
+      document.body.removeChild(cardDetails.element);
+      cardDetails.unrender();
+    };
+
+    fragment.appendChild(card.element);
+  });
+
+  container.appendChild(fragment);
 }
 
 function createData(count) {
