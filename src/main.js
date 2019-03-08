@@ -1,8 +1,8 @@
 import util from './util';
 import createFilter from './make-filter';
 import getCard from './get-card';
-import createCard from './make-card';
-import { create } from 'domain';
+import Card from './card';
+import CardDetails from './card-details';
 
 const FILTERS_CONTAINER = document.querySelector(`.main-navigation`);
 const CONTAINERS = document.querySelectorAll(`.films-list__container`);
@@ -11,11 +11,12 @@ const TOP_RATED = CONTAINERS[1];
 const MOST_COMMENTED = CONTAINERS[2];
 const CARDS_COUNT = 7;
 const CARDS_FILTERS = [`All movies`, `Watchlist`, `History`, `Favorites`];
+const cardsData = createData(CARDS_COUNT);
 
 createFilters();
-createCards(CARDS_CONTAINER, CARDS_COUNT);
-createCards(TOP_RATED, 2);
-createCards(MOST_COMMENTED, 2);
+createCards(CARDS_CONTAINER, cardsData);
+filteredBy(`rating`, TOP_RATED, 2);
+filteredBy(`comments`, MOST_COMMENTED, 2);
 
 FILTERS_CONTAINER.addEventListener(`click`, (evt) => {
   evt.preventDefault();
@@ -47,12 +48,62 @@ function onFilterClick(evt) {
   }
 }
 
-function createCards(container, count) {
+function filteredBy(type, container, count) {
   container.innerHTML = ``;
-  let cardsTemplate = [];
-  for (let i = 1; i <= count; i++) {
-    cardsTemplate.push(createCard(getCard(), i));
+  let fragment = document.createDocumentFragment();
+  const template = cardsData.slice();
+  const sortTemplate = template.sort((a, b) => b[type] - a[type]);
+  const fillCards = sortTemplate.slice(0, count).map((item) => item);
+  fillCards.forEach((item) => {
+    const card = new Card(item);
+    const cardDetails = new CardDetails(item);
+    card.render();
+
+    card.onClick = () => {
+      cardDetails.render();
+      document.body.appendChild(cardDetails.element);
+    };
+
+    cardDetails.onClick = () => {
+      document.body.removeChild(cardDetails.element);
+      cardDetails.unrender();
+    };
+
+    fragment.appendChild(card.element);
+  });
+  container.appendChild(fragment);
+}
+
+function createCards(container, data) {
+  container.innerHTML = ``;
+  let fragment = document.createDocumentFragment();
+  const fillCards = data.map((item) => item);
+  fillCards.forEach((item) => {
+    const card = new Card(item);
+    const cardDetails = new CardDetails(item);
+    card.render();
+
+    card.onClick = () => {
+      cardDetails.render();
+      document.body.appendChild(cardDetails.element);
+    };
+
+    cardDetails.onClick = () => {
+      document.body.removeChild(cardDetails.element);
+      cardDetails.unrender();
+    };
+
+    fragment.appendChild(card.element);
+  });
+
+  container.appendChild(fragment);
+}
+
+function createData(count) {
+  let result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(getCard());
   }
-  container.innerHTML = cardsTemplate.join(``);
+  return result;
 }
 

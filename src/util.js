@@ -13,6 +13,11 @@ const util = {
       array.splice(array[randomIndex], 1);
     }
     return result;
+  },
+  createElement: (template) => {
+    const newElement = document.createElement(`div`);
+    newElement.innerHTML = template;
+    return newElement.firstChild;
   }
 };
 
