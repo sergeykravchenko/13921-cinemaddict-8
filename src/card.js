@@ -1,7 +1,8 @@
-import util from './util';
+import Component from './component';
 
-export default class Card {
+export default class Card extends Component {
   constructor(data) {
+    super();
     this._poster = data.poster;
     this._title = data.title;
     this._rating = data.rating;
@@ -10,22 +11,12 @@ export default class Card {
     this._genre = data.genre;
     this._description = data.description;
     this._comments = data.comments;
-    this._onClick = null;
-    this._element = null;
     this._onCommentsClick = this._onCommentsClick.bind(this);
   }
 
   _onCommentsClick(evt) {
     evt.preventDefault();
     return typeof this._onClick === `function` && this._onClick();
-  }
-
-  get element() {
-    return this._element;
-  }
-
-  set onClick(fn) {
-    this._onClick = fn;
   }
 
   get template() {
@@ -49,23 +40,12 @@ export default class Card {
     </article>`;
   }
 
-  render() {
-    this._element = util.createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
-  }
-
-  bind() {
+  createListeners() {
     this._element.querySelector(`.film-card__comments`)
         .addEventListener(`click`, this._onCommentsClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`.film-card__comments`)
         .removeEventListener(`click`, this._onCommentsClick);
   }

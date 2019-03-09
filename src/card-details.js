@@ -1,7 +1,8 @@
-import util from './util';
+import Component from './component';
 
-export default class cardDetails {
+export default class cardDetails extends Component {
   constructor(data) {
+    super();
     this._poster = data.poster;
     this._title = data.title;
     this._rating = data.rating;
@@ -15,14 +16,6 @@ export default class cardDetails {
 
   _onCloseClick() {
     return typeof this._onClick === `function` && this._onClick();
-  }
-
-  get element() {
-    return this._element;
-  }
-
-  set onClick(fn) {
-    this._onClick = fn;
   }
 
   get template() {
@@ -192,23 +185,12 @@ export default class cardDetails {
   </section>`;
   }
 
-  render() {
-    this._element = util.createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
-  }
-
-  bind() {
+  createListeners() {
     this._element.querySelector(`.film-details__close-btn`)
         .addEventListener(`click`, this._onCloseClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`.film-details__close-btn`)
         .removeEventListener(`click`, this._onCloseClick);
   }

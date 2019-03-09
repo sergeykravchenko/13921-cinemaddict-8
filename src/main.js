@@ -14,7 +14,7 @@ const CARDS_FILTERS = [`All movies`, `Watchlist`, `History`, `Favorites`];
 const cardsData = createData(CARDS_COUNT);
 
 createFilters();
-createCards(CARDS_CONTAINER, cardsData);
+renderCards(CARDS_CONTAINER, cardsData);
 filteredBy(`rating`, TOP_RATED, 2);
 filteredBy(`comments`, MOST_COMMENTED, 2);
 
@@ -44,41 +44,29 @@ function onFilterClick(evt) {
       activeElement.classList.remove(`main-navigation__item--active`);
     }
     target.classList.add(`main-navigation__item--active`);
-    createCards(CARDS_CONTAINER, util.getRandomInteger(1, CARDS_COUNT));
+    renderCards(CARDS_CONTAINER, util.getRandomsFrom(cardsData, util.getRandomInteger(1, CARDS_COUNT)));
   }
 }
 
 function filteredBy(type, container, count) {
   container.innerHTML = ``;
-  let fragment = document.createDocumentFragment();
   const template = cardsData.slice();
   const sortTemplate = template.sort((a, b) => b[type] - a[type]);
   const fillCards = sortTemplate.slice(0, count).map((item) => item);
-  fillCards.forEach((item) => {
-    const card = new Card(item);
-    const cardDetails = new CardDetails(item);
-    card.render();
-
-    card.onClick = () => {
-      cardDetails.render();
-      document.body.appendChild(cardDetails.element);
-    };
-
-    cardDetails.onClick = () => {
-      document.body.removeChild(cardDetails.element);
-      cardDetails.unrender();
-    };
-
-    fragment.appendChild(card.element);
-  });
-  container.appendChild(fragment);
+  const cards = createCards(fillCards);
+  container.appendChild(cards);
 }
 
-function createCards(container, data) {
+function renderCards(container, data) {
   container.innerHTML = ``;
-  let fragment = document.createDocumentFragment();
   const fillCards = data.map((item) => item);
-  fillCards.forEach((item) => {
+  const cards = createCards(fillCards);
+  container.appendChild(cards);
+}
+
+function createCards(data) {
+  let fragment = document.createDocumentFragment();
+  data.forEach((item) => {
     const card = new Card(item);
     const cardDetails = new CardDetails(item);
     card.render();
@@ -95,8 +83,7 @@ function createCards(container, data) {
 
     fragment.appendChild(card.element);
   });
-
-  container.appendChild(fragment);
+  return fragment;
 }
 
 function createData(count) {
@@ -106,4 +93,3 @@ function createData(count) {
   }
   return result;
 }
-
