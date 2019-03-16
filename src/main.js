@@ -76,7 +76,13 @@ function createCards(data) {
       document.body.appendChild(cardDetails.element);
     };
 
-    cardDetails.onClick = () => {
+    cardDetails.onClick = (newObject) => {
+      card.comments = newObject.comments;
+      card.isInWatchlist = newObject.isInWatchlist;
+      card.isWatched = newObject.isWatched;
+      card.isFavorite = newObject.isFavorite;
+
+      card.update(card);
       document.body.removeChild(cardDetails.element);
       cardDetails.unrender();
     };

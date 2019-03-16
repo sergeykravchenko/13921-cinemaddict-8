@@ -1,4 +1,5 @@
 const util = {
+  ENTER_KEYCODE: 13,
   getRandom: (max, min = 0) => Math.random() * (max - min) + min,
   getRandomInteger: (max, min = 0) => Math.floor(util.getRandom(max, min)),
   getRandomBoolean: () => [true, false][util.getRandomInteger(2)],
