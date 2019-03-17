@@ -92,6 +92,7 @@ export default class cardDetails extends Component {
       textarea.value = ``;
       this._element.querySelector(`.film-details__add-emoji`).checked = false;
       this._element.querySelector(`.film-details__comments-list`).innerHTML = this._getCommentsTemplate();
+      this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
     }
   }
 
@@ -177,7 +178,7 @@ export default class cardDetails extends Component {
             </tr>
             <tr class="film-details__row">
               <td class="film-details__term">Runtime</td>
-              <td class="film-details__cell">${Math.floor((moment.duration(this._duration).asMinutes() / 1000 * 60) % 60)} min</td>
+              <td class="film-details__cell">${moment.duration(this._duration).asMinutes().toFixed()} min</td>
             </tr>
             <tr class="film-details__row">
               <td class="film-details__term">Country</td>
@@ -268,8 +269,8 @@ export default class cardDetails extends Component {
   createListeners() {
     this._element.querySelector(`.film-details__close-btn`)
         .addEventListener(`click`, this._onCloseClick);
-    this._element.querySelectorAll(`.film-details__emoji-label`).forEach((item) => {
-      item.addEventListener(`click`, this._onChangeEmoji);
+    this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
+      item.addEventListener(`change`, this._onChangeEmoji);
     });
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
       item.addEventListener(`click`, this._onChangeRating);
@@ -281,7 +282,7 @@ export default class cardDetails extends Component {
     this._element.querySelector(`.film-details__close-btn`)
         .removeEventListener(`click`, this._onCloseClick);
     this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
-      item.removeEventListener(`click`, this._onChangeEmoji);
+      item.removeEventListener(`change`, this._onChangeEmoji);
     });
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
       item.removeEventListener(`click`, this._onChangeRating);
