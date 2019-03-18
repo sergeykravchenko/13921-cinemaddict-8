@@ -1,5 +1,5 @@
 import util from './util';
-import createFilter from './make-filter';
+import Filter from './make-filter';
 import getCard from './get-card';
 import Card from './card';
 import CardDetails from './card-details';
@@ -10,7 +10,33 @@ const CARDS_CONTAINER = CONTAINERS[0];
 const TOP_RATED = CONTAINERS[1];
 const MOST_COMMENTED = CONTAINERS[2];
 const CARDS_COUNT = 7;
-const CARDS_FILTERS = [`All movies`, `Watchlist`, `History`, `Favorites`];
+const FILTER_MAX_COUNT = 50;
+const CardsFilters = [
+  {
+    filterName: `All movies`,
+    filterId: `all`,
+    count: util.getRandomInteger(FILTER_MAX_COUNT),
+    isActive: true
+  },
+  {
+    filterName: `Watchlist`,
+    filterId: `watchlist`,
+    count: util.getRandomInteger(FILTER_MAX_COUNT),
+    isActive: false
+  },
+  {
+    filterName: `History`,
+    filterId: `history`,
+    count: util.getRandomInteger(FILTER_MAX_COUNT),
+    isActive: false
+  },
+  {
+    filterName: `Favorites`,
+    filterId: `favorites`,
+    count: util.getRandomInteger(FILTER_MAX_COUNT),
+    isActive: false
+  }
+];
 const cardsData = createData(CARDS_COUNT);
 
 createFilters();
@@ -26,12 +52,9 @@ FILTERS_CONTAINER.addEventListener(`click`, (evt) => {
 function createFilters() {
   FILTERS_CONTAINER.innerHTML = ``;
   let filterTemplate = ``;
-  CARDS_FILTERS.forEach(function (item, i) {
-    filterTemplate += createFilter(
-        item,
-        util.getRandomInteger(0, 30),
-        i
-    );
+  CardsFilters.forEach(function (item) {
+    const filter = new Filter(item);
+    filterTemplate += filter.template;
   });
   FILTERS_CONTAINER.innerHTML = filterTemplate;
 }
@@ -76,7 +99,13 @@ function createCards(data) {
       document.body.appendChild(cardDetails.element);
     };
 
-    cardDetails.onClick = () => {
+    cardDetails.onClick = (newObject) => {
+      card.comments = newObject.comments;
+      card.isInWatchlist = newObject.isInWatchlist;
+      card.isWatched = newObject.isWatched;
+      card.isFavorite = newObject.isFavorite;
+
+      card.update(card);
       document.body.removeChild(cardDetails.element);
       cardDetails.unrender();
     };

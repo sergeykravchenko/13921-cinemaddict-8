@@ -1,6 +1,13 @@
-export default (filterName, count, index) => {
-  const counter = ` <span class="main-navigation__item-count">${count}</span>`;
-  let filterId;
-  filterId = filterName.match(/\S*/)[0];
-  return `<a href="#${filterId.toLowerCase()}" class="main-navigation__item">${filterName}${index === 0 ? `` : counter}</a>`;
-};
+export default class Filter {
+  constructor(data) {
+    this._counter = ` <span class="main-navigation__item-count">${data.count}</span>`;
+    this._filterId = data.filterId;
+    this._filterName = data.filterName;
+    this._count = data.count;
+    this._isActive = data.isActive;
+  }
+
+  get template() {
+    return `<a href="#${this._filterId}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._filterName}${this._count === 0 ? `` : this._counter}</a>`;
+  }
+}

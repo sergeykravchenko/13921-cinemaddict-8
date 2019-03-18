@@ -1,8 +1,17 @@
 import util from './util';
+import moment from 'moment';
 
 const DESCRIPTION_COUNT = 3;
-const COMMENTS_MAX = 23;
 const RATING_MAX = 10;
+const ACTORS_MAX = 10;
+const GENRES_MAX = 3;
+const USER_DEFAULT_RATING = 5;
+
+const Time = {
+  YEAR: 365,
+  MS_IN_DAY: 86400000,
+  HOUR: 3600000,
+};
 
 const posters = new Set([
   `accused.jpg`,
@@ -31,6 +40,32 @@ const titles = new Set([
   `Gladiator `
 ]);
 
+const actors = new Set([
+  `Ewan McGregor`,
+  `Natalie Portman`,
+  `Hayden Christensen`,
+  `Samuel L. Jackson`,
+  `Elijah Wood`,
+  `Ian McKellen`,
+  `Viggo Mortensen`,
+  `Orlando Bloom`,
+  `Sean Bean`,
+  `Sean Astin`,
+  `Christopher Lee`,
+  `Cate Blanchett`
+]);
+
+const countries = new Set([
+  `USA`,
+  `Canada`,
+  `Russia`,
+  `Germany`,
+  `France`,
+  `Spain`,
+  `Italy`,
+  `Australia`
+]);
+
 const descriptions = [
   `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
   `Cras aliquet varius magna, non porta ligula feugiat eget.`,
@@ -45,26 +80,6 @@ const descriptions = [
   `In rutrum ac purus sit amet tempus`
 ];
 
-const years = new Set([
-  `2018`,
-  `2012`,
-  `2005`,
-  `2004`,
-  `2003`,
-  `2002`,
-  `2001`
-]);
-
-const durations = new Set([
-  `1h 60m`,
-  `1h 30m`,
-  `2h 30m`,
-  `2h 20m`,
-  `2h 00m`,
-  `1h 33m`,
-  `2h 10m`
-]);
-
 const genres = new Set([
   `Action`,
   `Drama`,
@@ -75,13 +90,35 @@ const genres = new Set([
   `History`
 ]);
 
+const ageLimit = [
+  `0+`,
+  `6+`,
+  `12+`,
+  `16+`,
+  `18+`,
+];
+
 export default () => ({
   poster: util.getRandomFrom([...posters]),
   title: util.getRandomFrom([...titles]),
+  actors: util.getRandomsFrom([...actors], ACTORS_MAX, 1).join(`, `),
+  country: util.getRandomFrom([...countries]),
   rating: util.getRandom(RATING_MAX).toFixed(1),
-  year: util.getRandomFrom([...years]),
-  duration: util.getRandomFrom([...durations]),
-  genre: util.getRandomFrom([...genres]),
+  userRating: USER_DEFAULT_RATING,
+  releaseDate: Date.now() + util.getRandomInteger(Time.YEAR + 1, (-Time.YEAR) * 15) * util.getRandomInteger(Time.MS_IN_DAY),
+  duration: util.getRandomInteger(Time.HOUR * 2.5, Time.HOUR),
+  genre: util.getRandomsFrom([...genres], GENRES_MAX, 1),
+  ageLimit: util.getRandomFrom(ageLimit),
   description: util.getRandomsFrom(descriptions, DESCRIPTION_COUNT, 1).join(` `),
-  comments: util.getRandomInteger(COMMENTS_MAX)
+  comments: [
+    {
+      author: `Tim Macoveev`,
+      date: moment(),
+      text: `So long-long story, boring!`,
+      emoji: `😴`
+    }
+  ],
+  isInWatchlist: util.getRandomBoolean(),
+  isWatched: util.getRandomBoolean(),
+  isFavorite: util.getRandomBoolean()
 });
