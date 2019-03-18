@@ -111,7 +111,7 @@ export default class cardDetails extends Component {
     let rating = ``;
     for (let i = 1; i <= ratingMax; i++) {
       rating += `
-        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === this._userRating ? `checked` : ``}>
+        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === +this._userRating ? `checked` : ``}>
         <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
       `;
     }
