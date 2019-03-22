@@ -78,7 +78,7 @@ export default class cardDetails extends Component {
   }
 
   _onAddComment(evt) {
-    if (evt.keyCode === util.ENTER_KEYCODE) {
+    if (evt.ctrlKey && evt.keyCode === util.ENTER_KEYCODE) {
       evt.preventDefault();
       const textarea = this._element.querySelector(`.film-details__comment-input`);
       const newComment = {
