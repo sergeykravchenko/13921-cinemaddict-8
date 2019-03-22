@@ -1,7 +1,7 @@
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import moment from 'moment';
-import cardsData from './main';
+
 
 const statisticCtx = document.querySelector(`.statistic__chart`);
 const textStats = document.querySelectorAll(`.statistic__item-text`);
