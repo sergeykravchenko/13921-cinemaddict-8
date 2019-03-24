@@ -58,8 +58,8 @@ statsButton.addEventListener(`click`, onStatsButtonClick);
 function onStatsButtonClick(evt) {
   evt.preventDefault();
   const active = FILTERS_CONTAINER.querySelector(`.main-navigation__item--active`);
-  active.classList.remove(`.main-navigation__item--active`);
-  statsButton.classList.add(`.main-navigation__item--active`);
+  active.classList.remove(`main-navigation__item--active`);
+  statsButton.classList.add(`main-navigation__item--active`);
   FILMS.classList.add(`visually-hidden`);
   STATS.classList.remove(`visually-hidden`);
   statsInit(cardsData);
@@ -119,19 +119,19 @@ function createCards(data) {
       cardDetails.unrender();
     };
 
-    card.onAddToWatchList = (state) => {
-      item.isInWatchlist = state;
+    card.onAddToWatchList = () => {
+      item.isInWatchlist = !item.isInWatchlist;
       cardDetails.update(item);
     };
 
-    card.onMarkAsWatched = (state) => {
-      card.isWatched = state;
-      cardDetails.update(card);
+    card.onMarkAsWatched = () => {
+      item.isWatched = !item.isWatched;
+      cardDetails.update(item);
     };
 
-    card.onAddToFavorite = (state) => {
-      card.isFavorite = state;
-      cardDetails.update(card);
+    card.onAddToFavorite = () => {
+      item.isFavorite = !item.isFavorite;
+      cardDetails.update(item);
     };
 
     fragment.appendChild(card.element);

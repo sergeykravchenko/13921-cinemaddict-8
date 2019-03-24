@@ -40,24 +40,21 @@ export default class Card extends Component {
   _onAddToWatchListClick(evt) {
     evt.preventDefault();
     if (typeof this._onAddToWatchList === `function`) {
-      this._isInWatchlist = !this._isInWatchlist;
-      this._onAddToWatchList(this._isInWatchlist);
+      this._onAddToWatchList();
     }
   }
 
   _onMarkAsWatchedClick(evt) {
     evt.preventDefault();
     if (typeof this._onMarkAsWatched === `function`) {
-      this._isWatched = !this._isWatched;
-      this._onMarkAsWatched(this._isWatched);
+      this._onMarkAsWatched();
     }
   }
 
   _onAddToFavoriteClick(evt) {
     evt.preventDefault();
     if (typeof this._onAddToFavorite === `function`) {
-      this._isFavorite = !this._isFavorite;
-      this._onAddToFavorite(this._isFavorite);
+      this._onAddToFavorite();
     }
   }
 

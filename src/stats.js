@@ -87,13 +87,14 @@ function getStats(data) {
       }
     });
   });
-  watchedStats.labels = Object.keys(watchedStats).sort((a, b) => b - a);
-  watchedStats.values = Object.values(watchedStats).sort((a, b) => b - a);
-  watchedStats.topGenre = watchedStats.labels[0];
-  watchedStats.total = getWatchedFilms(data).length;
-  watchedStats.totalDuration = getTotalDuration(data);
+  const result = {};
+  result.labels = Object.keys(watchedStats).sort((a, b) => b - a);
+  result.values = Object.values(watchedStats).sort((a, b) => b - a);
+  result.topGenre = result.labels[0];
+  result.total = getWatchedFilms(data).length;
+  result.totalDuration = getTotalDuration(data);
 
-  return watchedStats;
+  return result;
 }
 
 function getTotalDuration(data) {
