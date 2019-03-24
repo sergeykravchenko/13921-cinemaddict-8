@@ -11,11 +11,17 @@ export default class Card extends Component {
     this._duration = data.duration;
     this._genre = data.genre[0];
     this._description = data.description;
+    this._onAddToWatchList = null;
+    this._onMarkAsWatched = null;
+    this._onAddToFavorite = null;
+    this._onCommentsClick = this._onCommentsClick.bind(this);
+    this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
+    this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
+    this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
     this._comments = data.comments;
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
-    this._onCommentsClick = this._onCommentsClick.bind(this);
   }
 
   _onCommentsClick(evt) {
@@ -29,6 +35,39 @@ export default class Card extends Component {
 
   _updateCommentsCount() {
     this._element.querySelector(`.film-card__comments`).innerHTML = this._commentsCountsTemplate();
+  }
+
+  _onAddToWatchListClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onAddToWatchList === `function`) {
+      this._onAddToWatchList();
+    }
+  }
+
+  _onMarkAsWatchedClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onMarkAsWatched === `function`) {
+      this._onMarkAsWatched();
+    }
+  }
+
+  _onAddToFavoriteClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onAddToFavorite === `function`) {
+      this._onAddToFavorite();
+    }
+  }
+
+  set onAddToWatchList(fn) {
+    this._onAddToWatchList = fn;
+  }
+
+  set onMarkAsWatched(fn) {
+    this._onMarkAsWatched = fn;
+  }
+
+  set onAddToFavorite(fn) {
+    this._onAddToFavorite = fn;
   }
 
   get template() {
@@ -45,9 +84,9 @@ export default class Card extends Component {
     <button class="film-card__comments">${this._commentsCountsTemplate()}</button>
 
     <form class="film-card__controls">
-      <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist"><!--Add to watchlist--> WL</button>
-      <button class="film-card__controls-item button film-card__controls-item--mark-as-watched"><!--Mark as watched-->WTCHD</button>
-      <button class="film-card__controls-item button film-card__controls-item--favorite"><!--Mark as favorite-->FAV</button>
+      <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist">WL</button>
+      <button class="film-card__controls-item button film-card__controls-item--mark-as-watched">WTCHD</button>
+      <button class="film-card__controls-item button film-card__controls-item--favorite">FAV</button>
     </form>
     </article>`;
   }
@@ -55,11 +94,23 @@ export default class Card extends Component {
   createListeners() {
     this._element.querySelector(`.film-card__comments`)
         .addEventListener(`click`, this._onCommentsClick);
+    this._element.querySelector(`.film-card__controls-item--add-to-watchlist`)
+        .addEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-card__controls-item--mark-as-watched`)
+        .addEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-card__controls-item--favorite`)
+        .addEventListener(`click`, this._onAddToFavoriteClick);
   }
 
   removeListeners() {
     this._element.querySelector(`.film-card__comments`)
         .removeEventListener(`click`, this._onCommentsClick);
+    this._element.querySelector(`.film-card__controls-item--add-to-watchlist`)
+        .removeEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-card__controls-item--mark-as-watched`)
+        .removeEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-card__controls-item--favorite`)
+        .removeEventListener(`click`, this._onAddToFavoriteClick);
   }
 
   update(data) {
