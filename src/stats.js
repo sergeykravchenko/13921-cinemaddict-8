@@ -1,6 +1,5 @@
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import moment from 'moment';
 
 
 const statisticCtx = document.querySelector(`.statistic__chart`);
@@ -10,8 +9,8 @@ function statsInit(data) {
   let myChart;
   const stats = getStats(data);
   const BAR_HEIGHT = 50;
-  const hours = moment.duration(stats.totalDuration).hours();
-  const minutes = moment.duration(stats.totalDuration).minutes();
+  const hours = (stats.totalDuration / 60).toFixed();
+  const minutes = stats.totalDuration - hours * 60;
   statisticCtx.height = BAR_HEIGHT * stats.labels.length;
 
   myChart = new Chart(statisticCtx, {

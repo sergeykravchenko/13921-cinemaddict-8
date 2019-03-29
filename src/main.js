@@ -1,79 +1,81 @@
 import Filter from './filter';
-import getCard from './get-card';
+import Api from './backend-api';
 import Card from './card';
 import CardDetails from './card-details';
 import statsInit from './stats';
 
 const FILTERS_CONTAINER = document.querySelector(`.main-navigation`);
-const STATS = document.querySelector(`.statistic`);
-const FILMS = document.querySelector(`.films`);
+export const STATS = document.querySelector(`.statistic`);
+export const FILMS = document.querySelector(`.films`);
+const NO_FILMS = FILMS.querySelector(`.films-list__title`);
 const CONTAINERS = document.querySelectorAll(`.films-list__container`);
 const CARDS_CONTAINER = CONTAINERS[0];
 const TOP_RATED = CONTAINERS[1];
 const MOST_COMMENTED = CONTAINERS[2];
-const CARDS_COUNT = 7;
-const statsButton = document.querySelector(`[href*=stats]`);
-const cardsData = createData(CARDS_COUNT);
+export const statsButton = document.querySelector(`[href*=stats]`);
+
+const AUTHORIZATION = `Basic eo0w590ik2988a=${Math.random()}`;
+const END_POINT = `https://es8-demo-srv.appspot.com/moowle`;
+const api = new Api({endPoint: END_POINT, authorization: AUTHORIZATION});
+
+const onLoadCards = () => {
+  CARDS_CONTAINER.classList.add(`visually-hidden`);
+  NO_FILMS.classList.remove(`visually-hidden`);
+  NO_FILMS.innerHTML = `Loading movies...`;
+};
+
+const onLoadCardsError = () => {
+  NO_FILMS.innerHTML = `Something went wrong while loading movies. Check your connection or try again later`;
+};
+
+const onLoadCardsEnd = () => {
+  CARDS_CONTAINER.classList.remove(`visually-hidden`);
+  NO_FILMS.classList.add(`visually-hidden`);
+};
+
 const CardsFilters = [
   {
     filterName: `All movies`,
     filterId: `all`,
-    count: cardsData.length,
+    count: ``,
     isActive: true
   },
   {
     filterName: `Watchlist`,
     filterId: `watchlist`,
-    count: cardsData.filter((item) => item.isInWatchlist).length,
+    count: ``,
     isActive: false
   },
   {
     filterName: `History`,
     filterId: `history`,
-    count: cardsData.filter((item) => item.isWatched).length,
+    count: ``,
     isActive: false
   },
   {
     filterName: `Favorites`,
     filterId: `favorites`,
-    count: cardsData.filter((item) => item.isFavorite).length,
+    count: ``,
     isActive: false
   }
 ];
 
-const filterTypes = {
-  all: () => cardsData,
-  watchlist: () => cardsData.filter((item) => item.isInWatchlist),
-  history: () => cardsData.filter((item) => item.isWatched),
-  favorites: () => cardsData.filter((item) => item.isFavorite)
-};
+const filterTypes = (data) => ({
+  all: () => data,
+  watchlist: () => data.filter((item) => item.isInWatchlist),
+  history: () => data.filter((item) => item.isWatched),
+  favorites: () => data.filter((item) => item.isFavorite)
+});
 
-createFilters();
-renderCards(CARDS_CONTAINER, cardsData);
-filteredBy(`rating`, TOP_RATED, 2);
-filteredBy(`comments`, MOST_COMMENTED, 2);
-
-statsButton.addEventListener(`click`, onStatsButtonClick);
-
-function onStatsButtonClick(evt) {
-  evt.preventDefault();
-  const active = FILTERS_CONTAINER.querySelector(`.main-navigation__item--active`);
-  active.classList.remove(`main-navigation__item--active`);
-  statsButton.classList.add(`main-navigation__item--active`);
-  FILMS.classList.add(`visually-hidden`);
-  STATS.classList.remove(`visually-hidden`);
-  statsInit(cardsData);
-}
-
-function createFilters() {
+const createFilters = (data) => {
   const fragment = document.createDocumentFragment();
 
   CardsFilters.forEach(function (item) {
     const filter = new Filter(item);
 
     filter.onFilter = () => {
-      const data = filterTypes[filter.id]();
-      renderCards(CARDS_CONTAINER, data);
+      const result = filterTypes(data)[filter.id]();
+      renderCards(CARDS_CONTAINER, result);
     };
 
     filter.render();
@@ -81,29 +83,22 @@ function createFilters() {
   });
   const firstElement = FILTERS_CONTAINER.firstChild;
   FILTERS_CONTAINER.insertBefore(fragment, firstElement);
-}
+};
 
-function filteredBy(type, container, count) {
+const filteredBy = (type, container, count, data) => {
   container.innerHTML = ``;
-  const template = cardsData.slice();
+  const template = data.slice();
   const sortTemplate = template.sort((a, b) => b[type] - a[type]);
   const fillCards = sortTemplate.slice(0, count).map((item) => item);
   const cards = createCards(fillCards);
   container.appendChild(cards);
-}
+};
 
-function renderCards(container, data) {
-  container.innerHTML = ``;
-  const fillCards = data.map((item) => item);
-  const cards = createCards(fillCards);
-  container.appendChild(cards);
-}
-
-function createCards(data) {
+const createCards = (data) => {
   let fragment = document.createDocumentFragment();
-  data.forEach((item, i) => {
-    const card = new Card(item);
-    const cardDetails = new CardDetails(item);
+  data.forEach((item) => {
+    let card = new Card(item);
+    let cardDetails = new CardDetails(item);
     card.render();
 
     card.onClick = () => {
@@ -111,12 +106,36 @@ function createCards(data) {
       document.body.appendChild(cardDetails.element);
     };
 
-    cardDetails.onClick = (newObject) => {
-      const updatedCard = updateCard(cardsData, i, newObject);
+    cardDetails.onAddComment = (newComments) => {
+      cardDetails.defaultCommentBg();
+      cardDetails.onCommentBlock();
+      api.updateCard({id: card.id, data: {comments: newComments}})
+        .then((newCard) => {
+          cardDetails.onCommentSucces();
+          cardDetails.update(newCard);
+        })
+        .catch(() => {
+          cardDetails.onCommentError();
+          cardDetails.onCommentUnblock();
+        });
 
-      card.update(updatedCard);
-      document.body.removeChild(cardDetails.element);
-      cardDetails.unrender();
+    };
+
+    cardDetails.onClose = (newObject) => {
+      cardDetails.defaultRatingBg();
+      cardDetails.onRatingBlock();
+      api.updateCard({id: card.id, data: card.toRAW(newObject)})
+      .then((newCard) => {
+        cardDetails.onRatingUnblock();
+        item = newCard;
+        card.update(item);
+        document.body.removeChild(cardDetails.element);
+        cardDetails.unrender();
+      })
+      .catch(() => {
+        cardDetails.onRatingError();
+        cardDetails.onRatingUnblock();
+      });
     };
 
     card.onAddToWatchList = () => {
@@ -137,17 +156,37 @@ function createCards(data) {
     fragment.appendChild(card.element);
   });
   return fragment;
-}
+};
 
-function updateCard(cards, i, newCard) {
-  cards[i] = Object.assign({}, cards[i], newCard);
-  return cards[i];
-}
+const renderCards = (container, data) => {
+  container.innerHTML = ``;
+  const cards = createCards(data);
+  container.appendChild(cards);
+};
 
-function createData(count) {
-  let result = [];
-  for (let i = 0; i < count; i++) {
-    result.push(getCard());
-  }
-  return result;
-}
+let cardsData = [];
+
+const onStatsButtonClick = (evt) => {
+  evt.preventDefault();
+  const active = FILTERS_CONTAINER.querySelector(`.main-navigation__item--active`);
+  active.classList.remove(`main-navigation__item--active`);
+  statsButton.classList.add(`main-navigation__item--active`);
+  FILMS.classList.add(`visually-hidden`);
+  STATS.classList.remove(`visually-hidden`);
+  statsInit(cardsData);
+};
+
+statsButton.addEventListener(`click`, onStatsButtonClick);
+onLoadCards();
+
+api.getCards()
+  .then((cards) => {
+    cardsData = cards;
+    createFilters(cards);
+    renderCards(CARDS_CONTAINER, cards);
+    filteredBy(`rating`, TOP_RATED, 2, cards);
+    filteredBy(`comments`, MOST_COMMENTED, 2, cards);
+  })
+  .then(onLoadCardsEnd)
+  .catch(onLoadCardsError);
+
