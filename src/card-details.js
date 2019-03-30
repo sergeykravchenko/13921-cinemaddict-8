@@ -70,7 +70,7 @@ export default class cardDetails extends Component {
   }
 
   _onChangeRating() {
-    this._userRating = this._element.querySelector(`.film-details__user-rating-input:checked`).value;
+    this._userRating = +this._element.querySelector(`.film-details__user-rating-input:checked`).value;
     this._element.querySelector(`.film-details__user-rating span`).textContent = this._userRating;
   }
 
