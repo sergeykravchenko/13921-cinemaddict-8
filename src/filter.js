@@ -1,4 +1,5 @@
 import Component from './component';
+import {STATS, FILMS, statsButton} from './main';
 
 export default class Filter extends Component {
   constructor(data) {
@@ -6,7 +7,7 @@ export default class Filter extends Component {
     this._name = data.filterName;
     this.id = data.filterId;
     this._count = data.count;
-    this._counter = ` <span class="main-navigation__item-count">${data.count}</span>`;
+    this._counter = ` <span class="main-navigation__item-count">${this._count}</span>`;
     this._isActive = data.isActive;
     this._element = null;
     this._onFilter = null;
@@ -18,7 +19,7 @@ export default class Filter extends Component {
   }
 
   get template() {
-    return `<a href="#${this.id}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._name}${this._count === 0 ? `` : this._counter}</a>`;
+    return `<a href="#${this.id}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._name}${!this._count ? `` : this._counter}</a>`;
   }
 
   _onFilterClick(evt) {
@@ -29,6 +30,11 @@ export default class Filter extends Component {
       activeElement.classList.remove(`main-navigation__item--active`);
     }
     target.classList.add(`main-navigation__item--active`);
+
+    if (activeElement === statsButton) {
+      STATS.classList.add(`visually-hidden`);
+      FILMS.classList.remove(`visually-hidden`);
+    }
 
     if (typeof this._onFilter === `function`) {
       this._onFilter();
