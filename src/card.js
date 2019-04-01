@@ -134,8 +134,8 @@ export default class Card extends Component {
       'user_details': {
         'personal_rating': data.userRating,
         'comments': data.comments,
-        'is_favorite': data.isInWatchlist,
-        'watched': data.isWatched,
+        'watchlist': data.isInWatchlist,
+        'already_watched': data.isWatched,
         'favorite': data.isFavorite
       }
     };

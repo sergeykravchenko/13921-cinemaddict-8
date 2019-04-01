@@ -113,44 +113,89 @@ const createCards = (data) => {
         .then((newCard) => {
           cardDetails.onCommentSucces();
           cardDetails.update(newCard);
+          cardDetails.updateComments();
         })
         .catch(() => {
           cardDetails.onCommentError();
           cardDetails.onCommentUnblock();
         });
-
     };
 
     cardDetails.onClose = (newObject) => {
       cardDetails.defaultRatingBg();
       cardDetails.onRatingBlock();
       api.updateCard({id: card.id, data: card.toRAW(newObject)})
-      .then((newCard) => {
-        cardDetails.onRatingUnblock();
-        item = newCard;
-        card.update(item);
-        document.body.removeChild(cardDetails.element);
-        cardDetails.unrender();
-      })
-      .catch(() => {
-        cardDetails.onRatingError();
-        cardDetails.onRatingUnblock();
-      });
+        .then((newCard) => {
+          cardDetails.onRatingUnblock();
+          item = newCard;
+          card.update(item);
+          document.body.removeChild(cardDetails.element);
+          cardDetails.unrender();
+        })
+        .catch(() => {
+          cardDetails.onRatingError();
+          cardDetails.onRatingUnblock();
+        });
     };
 
     card.onAddToWatchList = () => {
       item.isInWatchlist = !item.isInWatchlist;
-      cardDetails.update(item);
+      api.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch();
+    };
+
+    cardDetails.onAddToWatchList = () => {
+      item.isInWatchlist = !item.isInWatchlist;
+      api.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch();
     };
 
     card.onMarkAsWatched = () => {
       item.isWatched = !item.isWatched;
-      cardDetails.update(item);
+      api.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch();
+    };
+
+    cardDetails.onMarkAsWatched = () => {
+      item.isWatched = !item.isWatched;
+      api.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch();
     };
 
     card.onAddToFavorite = () => {
       item.isFavorite = !item.isFavorite;
-      cardDetails.update(item);
+      api.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch();
+    };
+
+    cardDetails.onAddToFavorite = () => {
+      item.isFavorite = !item.isFavorite;
+      api.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch();
     };
 
     fragment.appendChild(card.element);

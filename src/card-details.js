@@ -39,6 +39,9 @@ export default class cardDetails extends Component {
     this._onChangeEmoji = this._onChangeEmoji.bind(this);
     this.onCommentUnblock = this.onCommentUnblock.bind(this);
     this.onRatingUnblock = this.onRatingUnblock.bind(this);
+    this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
+    this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
+    this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
   }
 
   _onCloseClick() {
@@ -110,7 +113,7 @@ export default class cardDetails extends Component {
     this._element.querySelector(`.film-details__add-emoji-label`).textContent = emoji;
   }
 
-  _updateComments() {
+  updateComments() {
     this._element.querySelector(`.film-details__comments-list`).innerHTML = this._getCommentsTemplate();
     this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
   }
@@ -143,6 +146,36 @@ export default class cardDetails extends Component {
 
   _setBgColor(element, color = ``) {
     element.style.backgroundColor = color;
+  }
+
+  _onAddToWatchListClick() {
+    if (typeof this._onAddToWatchList === `function`) {
+      this._onAddToWatchList();
+    }
+  }
+
+  _onMarkAsWatchedClick() {
+    if (typeof this._onMarkAsWatched === `function`) {
+      this._onMarkAsWatched();
+    }
+  }
+
+  _onAddToFavoriteClick() {
+    if (typeof this._onAddToFavorite === `function`) {
+      this._onAddToFavorite();
+    }
+  }
+
+  set onAddToWatchList(fn) {
+    this._onAddToWatchList = fn;
+  }
+
+  set onMarkAsWatched(fn) {
+    this._onMarkAsWatched = fn;
+  }
+
+  set onAddToFavorite(fn) {
+    this._onAddToFavorite = fn;
   }
 
   set onAddComment(fn) {
@@ -342,6 +375,12 @@ export default class cardDetails extends Component {
       item.addEventListener(`click`, this._onChangeRating);
     });
     this._element.querySelector(`.film-details__comment-input`).addEventListener(`keydown`, this._onAddCommentClick);
+    this._element.querySelector(`.film-details__control-label--watchlist`)
+        .addEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-details__control-label--watched`)
+        .addEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-details__control-label--favorite`)
+        .addEventListener(`click`, this._onAddToFavoriteClick);
   }
 
   removeListeners() {
@@ -354,6 +393,12 @@ export default class cardDetails extends Component {
       item.removeEventListener(`click`, this._onChangeRating);
     });
     this._element.querySelector(`.film-details__comment-input`).removeEventListener(`keydown`, this._onAddCommentClick);
+    this._element.querySelector(`.film-details__control-label--watchlist`)
+        .removeEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-details__control-label--watched`)
+        .removeEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-details__control-label--favorite`)
+        .removeEventListener(`click`, this._onAddToFavoriteClick);
   }
 
   update(data) {
@@ -362,7 +407,6 @@ export default class cardDetails extends Component {
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
-    this._updateComments();
   }
 
   static createMapper(target) {

@@ -7,7 +7,7 @@ export default class Filter extends Component {
     this._name = data.filterName;
     this.id = data.filterId;
     this._count = data.count;
-    this._counter = ` <span class="main-navigation__item-count">${data.count}</span>`;
+    this._counter = ` <span class="main-navigation__item-count">${this._count}</span>`;
     this._isActive = data.isActive;
     this._element = null;
     this._onFilter = null;
