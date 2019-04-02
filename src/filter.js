@@ -6,20 +6,21 @@ export default class Filter extends Component {
     super();
     this._name = data.filterName;
     this.id = data.filterId;
-    this._count = data.count;
-    this._counter = ` <span class="main-navigation__item-count">${this._count}</span>`;
     this._isActive = data.isActive;
+    this._count = null;
     this._element = null;
     this._onFilter = null;
     this._onFilterClick = this._onFilterClick.bind(this);
   }
 
-  set onFilter(fn) {
-    this._onFilter = fn;
-  }
-
-  get template() {
-    return `<a href="#${this.id}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._name}${!this._count ? `` : this._counter}</a>`;
+  _updateCount() {
+    const counter = this._element.querySelector(`.main-navigation__item-count`);
+    counter.textContent = this._count;
+    if (this._count !== 0) {
+      counter.classList.remove(`visually-hidden`);
+    } else {
+      counter.classList.add(`visually-hidden`);
+    }
   }
 
   _onFilterClick(evt) {
@@ -39,6 +40,19 @@ export default class Filter extends Component {
     if (typeof this._onFilter === `function`) {
       this._onFilter();
     }
+  }
+
+  set onFilter(fn) {
+    this._onFilter = fn;
+  }
+
+  get template() {
+    return `<a href="#${this.id}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._name} <span class="main-navigation__item-count ${this._count ? `` : `visually-hidden`}">${this._count}</span></a>`;
+  }
+
+  setCount(data) {
+    this._count = data.length;
+    this._updateCount();
   }
 
   createListeners() {
