@@ -36,7 +36,18 @@ export default class Api {
   getCards() {
     return this._load({url: `movies`})
       .then(toJSON)
-      .then(ModelCard.parseTasks);
+      .then(ModelCard.parseCards);
+  }
+
+  createCard({card}) {
+    return this._load({
+      url: `movies`,
+      method: Method.POST,
+      body: JSON.stringify(card),
+      headers: new Headers({'Content-Type': `application/json`})
+    })
+      .then(toJSON)
+      .then(ModelCard.parseCard);
   }
 
   updateCard({id, data}) {
@@ -47,7 +58,7 @@ export default class Api {
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
-      .then(ModelCard.parseTask);
+      .then(ModelCard.parseCard);
   }
 
   deleteCard({id}) {
@@ -62,5 +73,15 @@ export default class Api {
       .catch((err) => {
         throw err;
       });
+  }
+
+  syncCards({cards}) {
+    return this._load({
+      url: `movies/sync`,
+      method: `POST`,
+      body: JSON.stringify(cards),
+      headers: new Headers({'Content-Type': `application/json`})
+    })
+      .then(toJSON);
   }
 }

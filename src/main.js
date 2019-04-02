@@ -1,5 +1,7 @@
 import Filter from './filter';
 import Api from './backend-api';
+import Store from './store';
+import Provider from './provider';
 import Card from './card';
 import CardDetails from './card-details';
 import statsInit from './stats';
@@ -12,11 +14,10 @@ const CONTAINERS = document.querySelectorAll(`.films-list__container`);
 const CARDS_CONTAINER = CONTAINERS[0];
 const TOP_RATED = CONTAINERS[1];
 const MOST_COMMENTED = CONTAINERS[2];
-export const statsButton = document.querySelector(`[href*=stats]`);
 
 const AUTHORIZATION = `Basic eo0w590ik2988a=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/moowle`;
-const api = new Api({endPoint: END_POINT, authorization: AUTHORIZATION});
+const CARDS_STORE_KEY = `cards-store-key`;
 
 const onLoadCards = () => {
   CARDS_CONTAINER.classList.add(`visually-hidden`);
@@ -60,6 +61,17 @@ const CardsFilters = [
   }
 ];
 
+const api = new Api({endPoint: END_POINT, authorization: AUTHORIZATION});
+const store = new Store({key: CARDS_STORE_KEY, storage: localStorage});
+const provider = new Provider({api, store, generateId: () => String(Date.now())});
+export const statsButton = document.querySelector(`[href*=stats]`);
+
+window.addEventListener(`offline`, () => (document.title = `${document.title}[OFFLINE]`));
+window.addEventListener(`online`, () => {
+  document.title = document.title.split(`[OFFLINE]`)[0];
+  provider.syncCards();
+});
+
 const filterTypes = (data) => ({
   all: () => data,
   watchlist: () => data.filter((item) => item.isInWatchlist),
@@ -68,17 +80,19 @@ const filterTypes = (data) => ({
 });
 
 const createFilters = (data) => {
+  FILTERS_CONTAINER.innerHTML = ``;
   const fragment = document.createDocumentFragment();
 
   CardsFilters.forEach(function (item) {
     const filter = new Filter(item);
+    const filteredData = filterTypes(data)[filter.id]();
 
     filter.onFilter = () => {
-      const result = filterTypes(data)[filter.id]();
-      renderCards(CARDS_CONTAINER, result);
+      renderCards(CARDS_CONTAINER, filteredData);
     };
 
     filter.render();
+    filter.setCount(filteredData);
     fragment.appendChild(filter.element);
   });
   const firstElement = FILTERS_CONTAINER.firstChild;
@@ -106,10 +120,11 @@ const createCards = (data) => {
       document.body.appendChild(cardDetails.element);
     };
 
-    cardDetails.onAddComment = (newComments) => {
+    cardDetails.onAddComment = (newComment) => {
       cardDetails.defaultCommentBg();
       cardDetails.onCommentBlock();
-      api.updateCard({id: card.id, data: {comments: newComments}})
+      item.comments = newComment;
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           cardDetails.onCommentSucces();
           cardDetails.update(newCard);
@@ -124,7 +139,7 @@ const createCards = (data) => {
     cardDetails.onClose = (newObject) => {
       cardDetails.defaultRatingBg();
       cardDetails.onRatingBlock();
-      api.updateCard({id: card.id, data: card.toRAW(newObject)})
+      provider.updateCard({id: card.id, data: card.toRAW(newObject)})
         .then((newCard) => {
           cardDetails.onRatingUnblock();
           item = newCard;
@@ -140,60 +155,66 @@ const createCards = (data) => {
 
     card.onAddToWatchList = () => {
       item.isInWatchlist = !item.isInWatchlist;
-      api.updateCard({id: card.id, data: card.toRAW(item)})
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           item = newCard;
           cardDetails.update(item);
+          createFilters(data);
         })
         .catch();
     };
 
     cardDetails.onAddToWatchList = () => {
       item.isInWatchlist = !item.isInWatchlist;
-      api.updateCard({id: card.id, data: card.toRAW(item)})
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           item = newCard;
           cardDetails.update(item);
+          createFilters(data);
         })
         .catch();
     };
 
     card.onMarkAsWatched = () => {
       item.isWatched = !item.isWatched;
-      api.updateCard({id: card.id, data: card.toRAW(item)})
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           item = newCard;
           cardDetails.update(item);
+          createFilters(data);
         })
         .catch();
     };
 
     cardDetails.onMarkAsWatched = () => {
       item.isWatched = !item.isWatched;
-      api.updateCard({id: card.id, data: card.toRAW(item)})
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           item = newCard;
           cardDetails.update(item);
+          createFilters(data);
         })
         .catch();
     };
 
     card.onAddToFavorite = () => {
       item.isFavorite = !item.isFavorite;
-      api.updateCard({id: card.id, data: card.toRAW(item)})
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           item = newCard;
           cardDetails.update(item);
+          createFilters(data);
         })
         .catch();
     };
 
     cardDetails.onAddToFavorite = () => {
       item.isFavorite = !item.isFavorite;
-      api.updateCard({id: card.id, data: card.toRAW(item)})
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
         .then((newCard) => {
           item = newCard;
           cardDetails.update(item);
+          createFilters(data);
         })
         .catch();
     };
@@ -224,7 +245,7 @@ const onStatsButtonClick = (evt) => {
 statsButton.addEventListener(`click`, onStatsButtonClick);
 onLoadCards();
 
-api.getCards()
+provider.getCards()
   .then((cards) => {
     cardsData = cards;
     createFilters(cards);

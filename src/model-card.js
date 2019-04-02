@@ -23,9 +23,27 @@ export default class ModelCard {
 
   toRAW() {
     return {
+      'id': this.id,
+      'comments': this.comments,
+      'film_info': {
+        'actors': this.actors,
+        'age_rating': this.ageRating,
+        'alternative_title': this.altTitle,
+        'description': this.description,
+        'director': this.director,
+        'genre': [...this.genre],
+        'poster': this.poster,
+        'release': {
+          'date': this.releaseDate,
+          'release_country': this.country
+        },
+        'runtime': this.duration,
+        'title': this.title,
+        'total_rating': this.rating,
+        'writers': [...this.writers]
+      },
       'user_details': {
         'personal_rating': this.userRating,
-        'comments': this.comments,
         'is_favorite': this.isInWatchlist,
         'watched': this.isWatched,
         'favorite': this.isFavorite
@@ -33,11 +51,11 @@ export default class ModelCard {
     };
   }
 
-  static parseTask(data) {
+  static parseCard(data) {
     return new ModelCard(data);
   }
 
-  static parseTasks(data) {
-    return data.map(ModelCard.parseTask);
+  static parseCards(data) {
+    return data.map(ModelCard.parseCard);
   }
 }
