@@ -28,9 +28,9 @@ export default class Provider {
   createCard({card}) {
     if (this._isOnline()) {
       return this._api.createCard({card})
-      .then((card) => {
-        this._store.setItem({key: card.id, item: card.toRAW(card)});
-        return card;
+      .then((cardItem) => {
+        this._store.setItem({key: cardItem.id, item: cardItem.toRAW(card)});
+        return cardItem;
       });
     } else {
       card.id = this._generateId();
