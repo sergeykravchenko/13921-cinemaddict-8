@@ -1,8 +1,6 @@
 import ModelCard from './model-card';
 
-const objectToArray = (object) => {
-  return Object.keys(object).map((id) => object[id]);
-};
+const objectToArray = (object) => Object.keys(object).map((id) => object[id]);
 
 export default class Provider {
   constructor({api, store, generateId}) {
