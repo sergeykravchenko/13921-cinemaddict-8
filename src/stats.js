@@ -44,14 +44,18 @@ const filterTimes = (data) => ({
 });
 
 const statsInit = (data) => {
-  let myChart;
+  // let myChart = null;
   const stats = getStats(data);
   const BAR_HEIGHT = 50;
   const hours = (stats.totalDuration / 60).toFixed();
   const minutes = stats.totalDuration - hours * 60;
   statisticCtx.height = BAR_HEIGHT * stats.labels.length;
 
-  myChart = new Chart(statisticCtx, {
+  textStats[0].innerHTML = `${stats.total} <span class="statistic__item-description">movies</span>`;
+  textStats[1].innerHTML = `${hours} <span class="statistic__item-description">h</span> ${minutes} <span class="statistic__item-description">m</span>`;
+  textStats[2].innerHTML = `${stats.topGenre}`;
+
+  return new Chart(statisticCtx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
@@ -107,10 +111,6 @@ const statsInit = (data) => {
       }
     }
   });
-
-  textStats[0].innerHTML = `${stats.total} <span class="statistic__item-description">movies</span>`;
-  textStats[1].innerHTML = `${hours} <span class="statistic__item-description">h</span> ${minutes} <span class="statistic__item-description">m</span>`;
-  textStats[2].innerHTML = `${stats.topGenre}`;
 };
 
 export const getStatsByTime = (evt, data) => {
