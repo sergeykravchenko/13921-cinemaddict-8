@@ -1,7 +1,7 @@
 export default class ModelCard {
   constructor(data) {
     this.id = data[`id`];
-    this.actors = new Set(data.film_info[`actors`]) || ``;
+    this.actors = new Set(data.film_info[`actors`]) || [];
     this.ageRating = data.film_info[`age_rating`] || ``;
     this.altTitle = data.film_info[`alternative_title`] || ``;
     this.description = data.film_info[`description`] || ``;
@@ -19,6 +19,7 @@ export default class ModelCard {
     this.isInWatchlist = Boolean(data.user_details[`watchlist`]);
     this.isWatched = Boolean(data.user_details[`already_watched`]);
     this.isFavorite = Boolean(data.user_details[`favorite`]);
+    this.watchingDate = data.user_details[`watching_date`] || ``;
   }
 
   toRAW() {
@@ -26,7 +27,7 @@ export default class ModelCard {
       'id': this.id,
       'comments': this.comments,
       'film_info': {
-        'actors': this.actors,
+        'actors': [...this.actors],
         'age_rating': this.ageRating,
         'alternative_title': this.altTitle,
         'description': this.description,

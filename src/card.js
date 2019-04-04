@@ -1,6 +1,8 @@
 import Component from './component';
 import moment from 'moment';
 
+const MAX_LENGTH = 140;
+
 export default class Card extends Component {
   constructor(data) {
     super();
@@ -9,6 +11,7 @@ export default class Card extends Component {
     this._title = data.title;
     this._rating = data.rating;
     this._releaseDate = data.releaseDate;
+    this._watchingDate = data.watchingDate;
     this._duration = data.duration;
     this._genre = data.genre;
     this._description = data.description;
@@ -78,7 +81,7 @@ export default class Card extends Component {
   }
 
   get template() {
-    return `<article class="film-card">
+    return `<article class="film-card visually-hidden">
     <h3 class="film-card__title">${this._title}</h3>
     <p class="film-card__rating">${this._rating}</p>
     <p class="film-card__info">
@@ -87,7 +90,7 @@ export default class Card extends Component {
       <span class="film-card__genre">${[...this._genre][0]}</span>
     </p>
     <img src="${this._poster}" alt="" class="film-card__poster">
-    <p class="film-card__description">${this._description}</p>
+    <p class="film-card__description">${this._description.length < MAX_LENGTH ? this._description.substr(0, MAX_LENGTH) + `...` : this._description}</p>
     <button class="film-card__comments">${this._commentsCountsTemplate()}</button>
 
     <form class="film-card__controls">
@@ -154,7 +157,8 @@ export default class Card extends Component {
         'personal_rating': data.userRating,
         'watchlist': data.isInWatchlist,
         'already_watched': data.isWatched,
-        'favorite': data.isFavorite
+        'favorite': data.isFavorite,
+        'watching_date': data.watchingDate
       }
     };
   }

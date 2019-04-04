@@ -1,5 +1,13 @@
 const util = {
-  ENTER_KEYCODE: 13,
+  KEY_CODE: {
+    ESC: 27,
+    ENTER: 13
+  },
+  onPressedKey: (evt, keycode, action) => {
+    if (evt.keyCode === keycode) {
+      action();
+    }
+  },
   getRandom: (max, min = 0) => Math.random() * (max - min) + min,
   getRandomInteger: (max, min = 0) => Math.floor(util.getRandom(max, min)),
   getRandomBoolean: () => [true, false][util.getRandomInteger(2)],

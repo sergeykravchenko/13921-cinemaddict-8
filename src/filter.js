@@ -16,7 +16,7 @@ export default class Filter extends Component {
   _updateCount() {
     const counter = this._element.querySelector(`.main-navigation__item-count`);
     counter.textContent = this._count;
-    if (this._count !== 0) {
+    if (this._count !== 0 && this.id !== `all`) {
       counter.classList.remove(`visually-hidden`);
     } else {
       counter.classList.add(`visually-hidden`);
@@ -47,7 +47,7 @@ export default class Filter extends Component {
   }
 
   get template() {
-    return `<a href="#${this.id}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._name} <span class="main-navigation__item-count ${this._count ? `` : `visually-hidden`}">${this._count}</span></a>`;
+    return `<a href="#${this.id}" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">${this._name} <span class="main-navigation__item-count ${this.id === `all` && !this._count ? `visually-hidden` : ``}">${this._count}</span></a>`;
   }
 
   setCount(data) {

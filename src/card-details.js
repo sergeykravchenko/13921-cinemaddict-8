@@ -14,6 +14,7 @@ export default class cardDetails extends Component {
     this._genre = data.genre;
     this._poster = data.poster;
     this._releaseDate = data.releaseDate;
+    this._watchingDate = data.watchingDate;
     this._country = data.country;
     this._duration = data.duration;
     this._title = data.title;
@@ -25,6 +26,8 @@ export default class cardDetails extends Component {
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
     this._onAddComment = null;
+    this._onDeleteComment = null;
+    this._onChangeRating = null;
     this._onClose = null;
     this._onClick = null;
     this._element = null;
@@ -34,14 +37,16 @@ export default class cardDetails extends Component {
       'grinning': `😀`
     };
     this._onCloseClick = this._onCloseClick.bind(this);
+    this._onEscPress = this._onEscPress.bind(this);
     this._onAddCommentClick = this._onAddCommentClick.bind(this);
-    this._onChangeRating = this._onChangeRating.bind(this);
+    this._onChangeRatingClick = this._onChangeRatingClick.bind(this);
     this._onChangeEmoji = this._onChangeEmoji.bind(this);
     this.onCommentUnblock = this.onCommentUnblock.bind(this);
     this.onRatingUnblock = this.onRatingUnblock.bind(this);
     this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
     this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
     this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
+    this._onDeleteCommentClick = this._onDeleteCommentClick.bind(this);
   }
 
   _onCloseClick() {
@@ -50,6 +55,10 @@ export default class cardDetails extends Component {
     if (typeof this._onClose === `function`) {
       this._onClose(newData);
     }
+  }
+
+  _onEscPress(evt) {
+    util.onPressedKey(evt, util.KEY_CODE.ESC, this._onCloseClick);
   }
 
   _processForm(formData) {
@@ -72,11 +81,6 @@ export default class cardDetails extends Component {
     return entry;
   }
 
-  _onChangeRating() {
-    this._userRating = +this._element.querySelector(`.film-details__user-rating-input:checked`).value;
-    this._element.querySelector(`.film-details__user-rating span`).textContent = this._userRating;
-  }
-
   _createRating() {
     const ratingMax = 9;
     let rating = ``;
@@ -89,22 +93,48 @@ export default class cardDetails extends Component {
     return rating;
   }
 
+  _onChangeRatingClick() {
+    this._userRating = +this._element.querySelector(`.film-details__user-rating-input:checked`).value;
+    this._element.querySelector(`.film-details__user-rating span`).textContent = this._userRating;
+
+    if (typeof this._onChangeRating === `function`) {
+      this._onChangeRating(this._userRating);
+    }
+  }
+
   _onAddCommentClick(evt) {
-    if (evt.ctrlKey && evt.keyCode === util.ENTER_KEYCODE) {
+    if (evt.ctrlKey && evt.keyCode === util.KEY_CODE.ENTER) {
       evt.preventDefault();
       const textarea = this._element.querySelector(`.film-details__comment-input`);
       const newComment = {
         author: `I'am`,
         date: Date.now(),
         comment: textarea.value,
-        emotion: this._element.querySelector(`.film-details__emoji-item:checked`).value
+        emotion: this._element.querySelector(`.film-details__emoji-item:checked`).value,
+        user: true
       };
 
       this._comments.push(newComment);
+      this._element.querySelector(`.film-details__user-rating-controls`).classList.remove(`visually-hidden`);
 
       if (typeof this._onAddComment === `function`) {
         this._onAddComment(this._comments);
       }
+    }
+  }
+
+  _onDeleteCommentClick(evt) {
+    evt.preventDefault();
+    this._comments.forEach((item, i, array) => {
+      if (item.user) {
+        const lastComment = array.lastIndexOf(item.user);
+        array.splice(lastComment, 1);
+      }
+      return array;
+    });
+
+    if (typeof this._onDeleteComment === `function`) {
+      this._onDeleteComment(this._comments);
     }
   }
 
@@ -180,6 +210,14 @@ export default class cardDetails extends Component {
 
   set onAddComment(fn) {
     this._onAddComment = fn;
+  }
+
+  set onDeleteComment(fn) {
+    this._onDeleteComment = fn;
+  }
+
+  set onChangeRating(fn) {
+    this._onChangeRating = fn;
   }
 
   set onClose(fn) {
@@ -294,8 +332,8 @@ export default class cardDetails extends Component {
       </section>
 
       <section class="film-details__user-rating-wrap">
-        <div class="film-details__user-rating-controls">
-          <span class="film-details__watched-status film-details__watched-status--active">Already watched</span>
+        <div class="film-details__user-rating-controls ${this._comments.some((item) => item.user) ? `` : `visually-hidden`}">
+          <span class="film-details__watched-status film-details__watched-status--active">${this._isWatched ? `Already watched` : `will watch`}</span>
           <button class="film-details__watched-reset" type="button">undo</button>
         </div>
 
@@ -366,13 +404,14 @@ export default class cardDetails extends Component {
   }
 
   createListeners() {
+    document.addEventListener(`keydown`, this._onEscPress);
     this._element.querySelector(`.film-details__close-btn`)
         .addEventListener(`click`, this._onCloseClick);
     this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
       item.addEventListener(`change`, this._onChangeEmoji);
     });
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
-      item.addEventListener(`click`, this._onChangeRating);
+      item.addEventListener(`click`, this._onChangeRatingClick);
     });
     this._element.querySelector(`.film-details__comment-input`).addEventListener(`keydown`, this._onAddCommentClick);
     this._element.querySelector(`.film-details__control-label--watchlist`)
@@ -381,16 +420,19 @@ export default class cardDetails extends Component {
         .addEventListener(`click`, this._onMarkAsWatchedClick);
     this._element.querySelector(`.film-details__control-label--favorite`)
         .addEventListener(`click`, this._onAddToFavoriteClick);
+    this._element.querySelector(`.film-details__watched-reset`)
+        .addEventListener(`click`, this._onDeleteCommentClick);
   }
 
   removeListeners() {
+    document.addEventListener(`keydown`, this._onEscPress);
     this._element.querySelector(`.film-details__close-btn`)
         .removeEventListener(`click`, this._onCloseClick);
     this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
       item.removeEventListener(`change`, this._onChangeEmoji);
     });
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
-      item.removeEventListener(`click`, this._onChangeRating);
+      item.removeEventListener(`click`, this._onChangeRatingClick);
     });
     this._element.querySelector(`.film-details__comment-input`).removeEventListener(`keydown`, this._onAddCommentClick);
     this._element.querySelector(`.film-details__control-label--watchlist`)
@@ -399,6 +441,8 @@ export default class cardDetails extends Component {
         .removeEventListener(`click`, this._onMarkAsWatchedClick);
     this._element.querySelector(`.film-details__control-label--favorite`)
         .removeEventListener(`click`, this._onAddToFavoriteClick);
+    this._element.querySelector(`.film-details__watched-reset`)
+        .removeEventListener(`click`, this._onDeleteCommentClick);
   }
 
   update(data) {
