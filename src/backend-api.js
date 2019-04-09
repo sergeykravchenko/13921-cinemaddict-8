@@ -18,9 +18,10 @@ const StatusCode = {
 const checkStatus = (response) => {
   if (response.status >= StatusCode.OK && response.status < StatusCode.REDIRECT) {
     return response;
-  } else {
-    throw new Error(`${response.status}: ${response.statusText}`);
   }
+
+  throw new Error(`${response.status}: ${response.statusText}`);
+
 };
 
 const toJSON = (response) => {
@@ -65,16 +66,6 @@ export default class Api {
     return this._load({url: `movies/${id}`, method: Method.DELETE});
   }
 
-  _load({url, method = Method.GET, body = null, headers = new Headers()}) {
-    headers.append(`Authorization`, this._authorization);
-
-    return fetch(`${this._endPoint}/${url}`, {method, body, headers})
-      .then(checkStatus)
-      .catch((err) => {
-        throw err;
-      });
-  }
-
   syncCards({cards}) {
     return this._load({
       url: `movies/sync`,
@@ -83,5 +74,15 @@ export default class Api {
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON);
+  }
+
+  _load({url, method = Method.GET, body = null, headers = new Headers()}) {
+    headers.append(`Authorization`, this._authorization);
+
+    return fetch(`${this._endPoint}/${url}`, {method, body, headers})
+      .then(checkStatus)
+      .catch((err) => {
+        throw err;
+      });
   }
 }

@@ -37,10 +37,10 @@ const getStats = (data) => {
 
 const filterTimes = (data) => ({
   'all-time': () => data,
-  'today': () => data.filter((item) => moment().subtract(1, `days`) >= moment(item.watchingDate)),
-  'week': () => data.filter((item) => moment().subtract(7, `days`) >= moment(item.watchingDate)),
-  'month': () => data.filter((item) => moment().subtract(1, `months`) >= moment(item.watchingDate)),
-  'year': () => data.filter((item) => moment().subtract(1, `years`) > moment(item.watchingDate))
+  'today': () => data.filter((item) => moment().subtract(1, `days`) <= moment(item.watchingDate)),
+  'week': () => data.filter((item) => moment().subtract(7, `days`) <= moment(item.watchingDate)),
+  'month': () => data.filter((item) => moment().subtract(1, `months`) <= moment(item.watchingDate)),
+  'year': () => data.filter((item) => moment().subtract(1, `years`) < moment(item.watchingDate))
 });
 
 const statsInit = (data) => {

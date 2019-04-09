@@ -49,153 +49,6 @@ export default class cardDetails extends Component {
     this._onDeleteCommentClick = this._onDeleteCommentClick.bind(this);
   }
 
-  _onCloseClick() {
-    const formData = new FormData(this._element.querySelector(`.film-details__inner`));
-    const newData = this._processForm(formData);
-    if (typeof this._onClose === `function`) {
-      this._onClose(newData);
-    }
-  }
-
-  _onEscPress(evt) {
-    util.onPressedKey(evt, util.KEY_CODE.ESC, this._onCloseClick);
-  }
-
-  _processForm(formData) {
-    const entry = {
-      userRating: this._userRating,
-      comments: this._comments,
-      isInWatchlist: this._isInWatchlist,
-      isWatched: this._isWatched,
-      isFavorite: this._isFavorite
-    };
-
-    const cardDetailsMapper = cardDetails.createMapper(entry);
-
-    for (const [property, value] of formData.entries()) {
-      if (cardDetailsMapper[property]) {
-        cardDetailsMapper[property](value);
-      }
-    }
-
-    return entry;
-  }
-
-  _createRating() {
-    const ratingMax = 9;
-    let rating = ``;
-    for (let i = 1; i <= ratingMax; i++) {
-      rating += `
-        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === +this._userRating.toFixed() ? `checked` : ``}>
-        <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
-      `;
-    }
-    return rating;
-  }
-
-  _onChangeRatingClick() {
-    this._userRating = +this._element.querySelector(`.film-details__user-rating-input:checked`).value;
-    this._element.querySelector(`.film-details__user-rating span`).textContent = this._userRating;
-
-    if (typeof this._onChangeRating === `function`) {
-      this._onChangeRating(this._userRating);
-    }
-  }
-
-  _onAddCommentClick(evt) {
-    if (evt.ctrlKey && evt.keyCode === util.KEY_CODE.ENTER) {
-      evt.preventDefault();
-      const textarea = this._element.querySelector(`.film-details__comment-input`);
-      const newComment = {
-        author: `I'am`,
-        date: Date.now(),
-        comment: textarea.value,
-        emotion: this._element.querySelector(`.film-details__emoji-item:checked`).value,
-        user: true
-      };
-
-      this._comments.push(newComment);
-      this._element.querySelector(`.film-details__user-rating-controls`).classList.remove(`visually-hidden`);
-
-      if (typeof this._onAddComment === `function`) {
-        this._onAddComment(this._comments);
-      }
-    }
-  }
-
-  _onDeleteCommentClick(evt) {
-    evt.preventDefault();
-    this._comments.forEach((item, i, array) => {
-      if (item.user) {
-        const lastComment = array.lastIndexOf(item.user);
-        array.splice(lastComment, 1);
-      }
-      return array;
-    });
-
-    if (typeof this._onDeleteComment === `function`) {
-      this._onDeleteComment(this._comments);
-    }
-  }
-
-  _onChangeEmoji() {
-    const emoji = this._element.querySelector(`.film-details__emoji-item:checked + label`).textContent;
-    this._element.querySelector(`.film-details__add-emoji-label`).textContent = emoji;
-  }
-
-  updateComments() {
-    this._element.querySelector(`.film-details__comments-list`).innerHTML = this._getCommentsTemplate();
-    this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
-  }
-
-  _getCommentsTemplate() {
-    return this._comments.map((item) => (`
-    <li class="film-details__comment">
-    <span class="film-details__comment-emoji">${this._emojis[item.emotion]}</span>
-    <div>
-      <p class="film-details__comment-text">${item.comment}</p>
-      <p class="film-details__comment-info">
-        <span class="film-details__comment-author">${item.author}</span>
-        <span class="film-details__comment-day">${moment(item.date).fromNow()}</span>
-      </p>
-    </div>
-  </li>
-    `)).join(``);
-  }
-
-  _onError(element, parent, unblock) {
-    const ANIMATION_TIMEOUT = 600;
-    element.style.backgroundColor = `#ff0000`;
-    parent.style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
-    unblock();
-
-    setTimeout(() => {
-      this._element.querySelector(`.film-details__inner`).style.animation = ``;
-    }, ANIMATION_TIMEOUT);
-  }
-
-  _setBgColor(element, color = ``) {
-    element.style.backgroundColor = color;
-  }
-
-  _onAddToWatchListClick() {
-    if (typeof this._onAddToWatchList === `function`) {
-      this._onAddToWatchList();
-    }
-  }
-
-  _onMarkAsWatchedClick() {
-    if (typeof this._onMarkAsWatched === `function`) {
-      this._onMarkAsWatched();
-    }
-  }
-
-  _onAddToFavoriteClick() {
-    if (typeof this._onAddToFavorite === `function`) {
-      this._onAddToFavorite();
-    }
-  }
-
   set onAddToWatchList(fn) {
     this._onAddToWatchList = fn;
   }
@@ -357,6 +210,11 @@ export default class cardDetails extends Component {
   </section>`;
   }
 
+  updateComments() {
+    this._element.querySelector(`.film-details__comments-list`).innerHTML = this._getCommentsTemplate();
+    this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
+  }
+
   onRatingBlock() {
     this._element.querySelectorAll(`.film-details__user-rating-input`)
       .forEach((item) => (item.disabled = true));
@@ -403,46 +261,148 @@ export default class cardDetails extends Component {
     this._onError(input, form, this.onCommentUnblock);
   }
 
-  createListeners() {
-    document.addEventListener(`keydown`, this._onEscPress);
-    this._element.querySelector(`.film-details__close-btn`)
-        .addEventListener(`click`, this._onCloseClick);
-    this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
-      item.addEventListener(`change`, this._onChangeEmoji);
-    });
-    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
-      item.addEventListener(`click`, this._onChangeRatingClick);
-    });
-    this._element.querySelector(`.film-details__comment-input`).addEventListener(`keydown`, this._onAddCommentClick);
-    this._element.querySelector(`.film-details__control-label--watchlist`)
-        .addEventListener(`click`, this._onAddToWatchListClick);
-    this._element.querySelector(`.film-details__control-label--watched`)
-        .addEventListener(`click`, this._onMarkAsWatchedClick);
-    this._element.querySelector(`.film-details__control-label--favorite`)
-        .addEventListener(`click`, this._onAddToFavoriteClick);
-    this._element.querySelector(`.film-details__watched-reset`)
-        .addEventListener(`click`, this._onDeleteCommentClick);
+
+  _onCloseClick() {
+    const formData = new FormData(this._element.querySelector(`.film-details__inner`));
+    const newData = this._processForm(formData);
+    if (typeof this._onClose === `function`) {
+      this._onClose(newData);
+    }
   }
 
-  removeListeners() {
-    document.addEventListener(`keydown`, this._onEscPress);
-    this._element.querySelector(`.film-details__close-btn`)
-        .removeEventListener(`click`, this._onCloseClick);
-    this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
-      item.removeEventListener(`change`, this._onChangeEmoji);
-    });
-    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
-      item.removeEventListener(`click`, this._onChangeRatingClick);
-    });
-    this._element.querySelector(`.film-details__comment-input`).removeEventListener(`keydown`, this._onAddCommentClick);
-    this._element.querySelector(`.film-details__control-label--watchlist`)
-        .removeEventListener(`click`, this._onAddToWatchListClick);
-    this._element.querySelector(`.film-details__control-label--watched`)
-        .removeEventListener(`click`, this._onMarkAsWatchedClick);
-    this._element.querySelector(`.film-details__control-label--favorite`)
-        .removeEventListener(`click`, this._onAddToFavoriteClick);
-    this._element.querySelector(`.film-details__watched-reset`)
-        .removeEventListener(`click`, this._onDeleteCommentClick);
+  _onEscPress(evt) {
+    util.onPressedKey(evt, util.KEY_CODE.ESC, this._onCloseClick);
+  }
+
+  _processForm(formData) {
+    const entry = {
+      userRating: this._userRating,
+      comments: this._comments,
+      isInWatchlist: this._isInWatchlist,
+      isWatched: this._isWatched,
+      isFavorite: this._isFavorite
+    };
+
+    const cardDetailsMapper = cardDetails.createMapper(entry);
+
+    for (const [property, value] of formData.entries()) {
+      if (cardDetailsMapper[property]) {
+        cardDetailsMapper[property](value);
+      }
+    }
+
+    return entry;
+  }
+
+  _createRating() {
+    const ratingMax = 9;
+    let rating = ``;
+    for (let i = 1; i <= ratingMax; i++) {
+      rating += `
+        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === +this._userRating.toFixed() ? `checked` : ``}>
+        <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
+      `;
+    }
+    return rating;
+  }
+
+  _onChangeRatingClick() {
+    this._userRating = +this._element.querySelector(`.film-details__user-rating-input:checked`).value;
+    this._element.querySelector(`.film-details__user-rating span`).textContent = this._userRating;
+
+    if (typeof this._onChangeRating === `function`) {
+      this._onChangeRating(this._userRating);
+    }
+  }
+
+  _onAddCommentClick(evt) {
+    if (evt.ctrlKey && evt.keyCode === util.KEY_CODE.ENTER) {
+      evt.preventDefault();
+      const textarea = this._element.querySelector(`.film-details__comment-input`);
+      const newComment = {
+        author: `I'am`,
+        date: Date.now(),
+        comment: textarea.value,
+        emotion: this._element.querySelector(`.film-details__emoji-item:checked`).value,
+        user: true
+      };
+
+      this._comments.push(newComment);
+      this._element.querySelector(`.film-details__user-rating-controls`).classList.remove(`visually-hidden`);
+
+      if (typeof this._onAddComment === `function`) {
+        this._onAddComment(this._comments);
+      }
+    }
+  }
+
+  _onDeleteCommentClick(evt) {
+    evt.preventDefault();
+    let i = this._comments.length - 1;
+    while (i > 0 && !this._comments[i].user) {
+      i -= 1;
+    }
+
+    if (this._comments[i].user) {
+      this._comments.splice(i, 1);
+    }
+
+    if (typeof this._onDeleteComment === `function`) {
+      this._onDeleteComment(this._comments);
+    }
+  }
+
+  _onChangeEmoji() {
+    const emoji = this._element.querySelector(`.film-details__emoji-item:checked + label`).textContent;
+    this._element.querySelector(`.film-details__add-emoji-label`).textContent = emoji;
+  }
+
+  _getCommentsTemplate() {
+    return this._comments.map((item) => (`
+    <li class="film-details__comment">
+    <span class="film-details__comment-emoji">${this._emojis[item.emotion]}</span>
+    <div>
+      <p class="film-details__comment-text">${item.comment}</p>
+      <p class="film-details__comment-info">
+        <span class="film-details__comment-author">${item.author}</span>
+        <span class="film-details__comment-day">${moment(item.date).fromNow()}</span>
+      </p>
+    </div>
+  </li>
+    `)).join(``);
+  }
+
+  _onError(element, parent, unblock) {
+    const ANIMATION_TIMEOUT = 600;
+    element.style.backgroundColor = `#ff0000`;
+    parent.style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
+    unblock();
+
+    setTimeout(() => {
+      this._element.querySelector(`.film-details__inner`).style.animation = ``;
+    }, ANIMATION_TIMEOUT);
+  }
+
+  _setBgColor(element, color = ``) {
+    element.style.backgroundColor = color;
+  }
+
+  _onAddToWatchListClick() {
+    if (typeof this._onAddToWatchList === `function`) {
+      this._onAddToWatchList();
+    }
+  }
+
+  _onMarkAsWatchedClick() {
+    if (typeof this._onMarkAsWatched === `function`) {
+      this._onMarkAsWatched();
+    }
+  }
+
+  _onAddToFavoriteClick() {
+    if (typeof this._onAddToFavorite === `function`) {
+      this._onAddToFavorite();
+    }
   }
 
   update(data) {
@@ -451,6 +411,48 @@ export default class cardDetails extends Component {
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
+  }
+
+  createListeners() {
+    document.addEventListener(`keydown`, this._onEscPress);
+    this._element.querySelector(`.film-details__close-btn`)
+      .addEventListener(`click`, this._onCloseClick);
+    this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
+      item.addEventListener(`change`, this._onChangeEmoji);
+    });
+    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
+      item.addEventListener(`click`, this._onChangeRatingClick);
+    });
+    this._element.querySelector(`.film-details__comment-input`).addEventListener(`keydown`, this._onAddCommentClick);
+    this._element.querySelector(`.film-details__control-label--watchlist`)
+      .addEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-details__control-label--watched`)
+      .addEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-details__control-label--favorite`)
+      .addEventListener(`click`, this._onAddToFavoriteClick);
+    this._element.querySelector(`.film-details__watched-reset`)
+      .addEventListener(`click`, this._onDeleteCommentClick);
+  }
+
+  removeListeners() {
+    document.addEventListener(`keydown`, this._onEscPress);
+    this._element.querySelector(`.film-details__close-btn`)
+      .removeEventListener(`click`, this._onCloseClick);
+    this._element.querySelectorAll(`.film-details__emoji-item`).forEach((item) => {
+      item.removeEventListener(`change`, this._onChangeEmoji);
+    });
+    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
+      item.removeEventListener(`click`, this._onChangeRatingClick);
+    });
+    this._element.querySelector(`.film-details__comment-input`).removeEventListener(`keydown`, this._onAddCommentClick);
+    this._element.querySelector(`.film-details__control-label--watchlist`)
+      .removeEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-details__control-label--watched`)
+      .removeEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-details__control-label--favorite`)
+      .removeEventListener(`click`, this._onAddToFavoriteClick);
+    this._element.querySelector(`.film-details__watched-reset`)
+      .removeEventListener(`click`, this._onDeleteCommentClick);
   }
 
   static createMapper(target) {

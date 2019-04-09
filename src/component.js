@@ -9,12 +9,12 @@ export default class Component {
     this._onClick = null;
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onClick(fn) {
     this._onClick = fn;
+  }
+
+  get element() {
+    return this._element;
   }
 
   get template() {
@@ -27,10 +27,6 @@ export default class Component {
     return this._element;
   }
 
-  createListeners() {}
-
-  removeListeners() {}
-
   unrender() {
     this.removeListeners();
     this._element.remove();
@@ -38,4 +34,8 @@ export default class Component {
   }
 
   update() {}
+
+  createListeners() {}
+
+  removeListeners() {}
 }
