@@ -69,25 +69,7 @@ export default class Card extends Component {
 
   toRAW(data) {
     return {
-      'id': this.id,
       'comments': data.comments,
-      'film_info': {
-        'actors': this.actors,
-        'age_rating': this.ageRating,
-        'alternative_title': this.altTitle,
-        'description': this.description,
-        'director': this.director,
-        'genre': this.genre,
-        'poster': this.poster,
-        'release': {
-          'date': this.releaseDate,
-          'release_country': this.country
-        },
-        'runtime': this.duration,
-        'title': this.title,
-        'total_rating': this.rating,
-        'writers': this.writers
-      },
       'user_details': {
         'personal_rating': data.userRating,
         'watchlist': data.isInWatchlist,

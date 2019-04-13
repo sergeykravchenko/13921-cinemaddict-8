@@ -186,7 +186,7 @@ export default class cardDetails extends Component {
 
       <section class="film-details__user-rating-wrap">
         <div class="film-details__user-rating-controls ${this._comments.some((item) => item.user) ? `` : `visually-hidden`}">
-          <span class="film-details__watched-status film-details__watched-status--active">${this._isWatched ? `Already watched` : `will watch`}</span>
+          <span class="film-details__watched-status film-details__watched-status--active"></span>
           <button class="film-details__watched-reset" type="button">undo</button>
         </div>
 
@@ -213,6 +213,15 @@ export default class cardDetails extends Component {
   updateComments() {
     this._element.querySelector(`.film-details__comments-list`).innerHTML = this._getCommentsTemplate();
     this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
+  }
+
+  updateCommentStatus() {
+    if (this._comments.some((item) => item.user)) {
+      this._element.querySelector(`.film-details__watched-status`).textContent = `Comment added`;
+    } else {
+      this._element.querySelector(`.film-details__watched-status`).textContent = `Comment deleted`;
+      this._element.querySelector(`.film-details__watched-reset`).classList.add(`visually-hidden`);
+    }
   }
 
   onRatingBlock() {

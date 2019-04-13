@@ -3,7 +3,9 @@ import Api from './backend-api';
 import Store from './store';
 import Provider from './provider';
 import Card from './card';
+import ExtraCard from './extra-card';
 import CardDetails from './card-details';
+import Search from './search';
 import {default as statsInit, getStatsByTime} from './stats';
 
 const Cards = {
@@ -11,7 +13,8 @@ const Cards = {
   STEP: 5
 };
 const FILTERS_CONTAINER = document.querySelector(`.main-navigation`);
-const SEARCH_INPUT = document.querySelector(`.search__field`);
+let SEARCH_INPUT;
+const HEADER = document.querySelector(`.header`);
 export const STATS = document.querySelector(`.statistic`);
 export const FILMS = document.querySelector(`.films`);
 const STATS_FILTERS = STATS.querySelector(`.statistic__filters`);
@@ -110,19 +113,118 @@ const createFilters = (data) => {
 
   CardsFilters.forEach(function (item) {
     const filter = new Filter(item);
+    filter.render();
     const filteredData = filterTypes(data)[filter.id]();
+    filter.setCount(filteredData);
 
     filter.onFilter = () => {
       SEARCH_INPUT.value = ``;
       renderCards(CARDS_CONTAINER, filteredData);
+
+      if (filteredData.length > Cards.STEP) {
+        LOAD_MORE.classList.remove(`visually-hidden`);
+      } else {
+        LOAD_MORE.classList.add(`visually-hidden`);
+      }
     };
 
-    filter.render();
-    filter.setCount(filteredData);
     fragment.appendChild(filter.element);
   });
+
   const firstElement = FILTERS_CONTAINER.firstChild;
   FILTERS_CONTAINER.insertBefore(fragment, firstElement);
+};
+
+
+const updateFilter = (data) => {
+  let activeIndex;
+  FILTERS_CONTAINER.querySelectorAll(`.main-navigation__item`).forEach((item, i) => {
+    if (item.classList.contains(`main-navigation__item--active`)) {
+      activeIndex = i;
+    }
+  });
+
+  createFilters(data);
+
+  FILTERS_CONTAINER.querySelector(`[href*=all]`).classList.remove(`main-navigation__item--active`);
+  FILTERS_CONTAINER.querySelectorAll(`.main-navigation__item`)[activeIndex].classList.add(`main-navigation__item--active`);
+
+};
+
+const createExtraCards = (data) => {
+  let fragment = document.createDocumentFragment();
+  data.forEach((item) => {
+    let extraCard = new ExtraCard(item);
+    let cardDetails = new CardDetails(item);
+    extraCard.render();
+
+    extraCard.onClick = () => {
+      cardDetails.render();
+      document.body.appendChild(cardDetails.element);
+    };
+
+    cardDetails.onAddComment = (newComment) => {
+      cardDetails.defaultCommentBg();
+      cardDetails.onCommentBlock();
+      item.comments = newComment;
+      provider.updateCard({id: extraCard.id, data: extraCard.toRAW(item)})
+        .then((newCard) => {
+          cardDetails.onCommentSucces();
+          cardDetails.update(newCard);
+          cardDetails.updateComments();
+          cardDetails.updateCommentStatus();
+        })
+        .catch(() => {
+          cardDetails.onCommentError();
+          cardDetails.onCommentUnblock();
+        });
+    };
+
+    cardDetails.onDeleteComment = (newComment) => {
+      item.comments = newComment;
+      provider.updateCard({id: extraCard.id, data: extraCard.toRAW(item)})
+        .then((newCard) => {
+          cardDetails.update(newCard);
+          cardDetails.updateComments();
+          cardDetails.updateCommentStatus();
+        })
+        .catch((err) => {
+          throw err;
+        });
+    };
+
+    cardDetails.onChangeRating = (newRating) => {
+      cardDetails.defaultRatingBg();
+      cardDetails.onRatingBlock();
+      item.userRating = newRating;
+      provider.updateCard({id: extraCard.id, data: extraCard.toRAW(item)})
+        .then((newCard) => {
+          cardDetails.onRatingUnblock();
+          item = newCard;
+          cardDetails.update(item);
+        })
+        .catch(() => {
+          cardDetails.onRatingError();
+          cardDetails.onRatingUnblock();
+        });
+    };
+
+    cardDetails.onClose = (newObject) => {
+      provider.updateCard({id: extraCard.id, data: extraCard.toRAW(newObject)})
+        .then((newCard) => {
+          item = newCard;
+          extraCard.update(item);
+          document.body.removeChild(cardDetails.element);
+          cardDetails.unrender();
+        })
+        .catch((err) => {
+          throw err;
+        });
+    };
+
+    fragment.appendChild(extraCard.element);
+  });
+  return fragment;
 };
 
 const filteredBy = (type, container, count, data) => {
@@ -130,7 +232,7 @@ const filteredBy = (type, container, count, data) => {
   const template = data.slice();
   const sortTemplate = template.sort((a, b) => b[type] - a[type]);
   const fillCards = sortTemplate.slice(0, count).map((item) => item);
-  const cards = createCards(fillCards);
+  const cards = createExtraCards(fillCards);
   container.appendChild(cards);
 };
 
@@ -159,6 +261,7 @@ const createCards = (data) => {
           cardDetails.onCommentSucces();
           cardDetails.update(newCard);
           cardDetails.updateComments();
+          cardDetails.updateCommentStatus();
         })
         .catch(() => {
           cardDetails.onCommentError();
@@ -172,6 +275,7 @@ const createCards = (data) => {
         .then((newCard) => {
           cardDetails.update(newCard);
           cardDetails.updateComments();
+          cardDetails.updateCommentStatus();
         })
         .catch((err) => {
           throw err;
@@ -215,7 +319,7 @@ const createCards = (data) => {
           cardDetails.update(item);
           return provider.getCards();
         })
-        .then(createFilters)
+        .then(updateFilter)
         .catch((err) => {
           throw err;
         });
@@ -229,7 +333,7 @@ const createCards = (data) => {
           cardDetails.update(item);
           return provider.getCards();
         })
-        .then(createFilters)
+        .then(updateFilter)
         .catch((err) => {
           throw err;
         });
@@ -244,7 +348,7 @@ const createCards = (data) => {
           return provider.getCards();
         })
         .then((newData) => {
-          createFilters(newData);
+          updateFilter(newData);
           getProfileRating(newData);
         })
         .catch((err) => {
@@ -261,7 +365,7 @@ const createCards = (data) => {
           return provider.getCards();
         })
         .then((newData) => {
-          createFilters(newData);
+          updateFilter(newData);
           getProfileRating(newData);
         })
         .catch((err) => {
@@ -277,7 +381,7 @@ const createCards = (data) => {
           cardDetails.update(item);
           return provider.getCards();
         })
-        .then(createFilters)
+        .then(updateFilter)
         .catch((err) => {
           throw err;
         });
@@ -291,7 +395,7 @@ const createCards = (data) => {
           cardDetails.update(item);
           return provider.getCards();
         })
-        .then(createFilters)
+        .then(updateFilter)
         .catch((err) => {
           throw err;
         });
@@ -336,13 +440,24 @@ provider.getCards()
   .then(onLoadCardsEnd)
   .catch(onLoadCardsError);
 
-const renderBySearch = () => {
-  const filterChars = `` + SEARCH_INPUT.value;
-  const result = cardsData.filter((item) => item.title.toLowerCase().includes(filterChars));
+const renderBySearch = (data, chars) => {
+  const result = data.filter((item) => item.title.toLowerCase().includes(chars));
   renderCards(CARDS_CONTAINER, result);
 };
 
-SEARCH_INPUT.addEventListener(`input`, renderBySearch);
+const renderSearch = () => {
+  const search = new Search();
+  const status = HEADER.querySelector(`.header__profile`);
+  search.render();
+  HEADER.insertBefore(search.element, status);
+  SEARCH_INPUT = search.element.querySelector(`.search__field`);
+
+  search.onSearch = (chars) => {
+    renderBySearch(cardsData, chars);
+  };
+};
+
+renderSearch();
 
 STATS_FILTERS.addEventListener(`change`, (evt) => {
   getStatsByTime(evt, cardsData);
@@ -353,7 +468,7 @@ const onLoadMoreClick = (evt) => {
   const hiddenCards = CARDS_CONTAINER.querySelectorAll(`.film-card.visually-hidden`);
   Array.from(hiddenCards).slice(0, Cards.STEP).forEach((item) => item.classList.remove(`visually-hidden`));
 
-  if (!CARDS_CONTAINER.querySelector(`.social__comment.visually-hidden`)) {
+  if (!CARDS_CONTAINER.querySelector(`.film-card.visually-hidden`)) {
     evt.target.classList.add(`visually-hidden`);
   }
 };
