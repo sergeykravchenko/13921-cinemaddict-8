@@ -15,8 +15,8 @@ const Cards = {
 const FILTERS_CONTAINER = document.querySelector(`.main-navigation`);
 let SEARCH_INPUT;
 const HEADER = document.querySelector(`.header`);
-export const STATS = document.querySelector(`.statistic`);
-export const FILMS = document.querySelector(`.films`);
+const STATS = document.querySelector(`.statistic`);
+const FILMS = document.querySelector(`.films`);
 const STATS_FILTERS = STATS.querySelector(`.statistic__filters`);
 const NO_FILMS = FILMS.querySelector(`.films-list__title`);
 const CONTAINERS = document.querySelectorAll(`.films-list__container`);
@@ -75,6 +75,7 @@ const api = new Api({endPoint: END_POINT, authorization: AUTHORIZATION});
 const store = new Store({key: CARDS_STORE_KEY, storage: localStorage});
 const provider = new Provider({api, store, generateId: () => String(Date.now())});
 export const statsButton = document.querySelector(`[href*=stats]`);
+let cardsData = [];
 
 window.addEventListener(`offline`, () => (document.title = `${document.title}[OFFLINE]`));
 window.addEventListener(`online`, () => {
@@ -106,19 +107,32 @@ const filterTypes = (data) => ({
   favorites: () => data.filter((item) => item.isFavorite)
 });
 
+const hideStatsOnFilter = () => {
+  if (statsButton.classList.contains(`main-navigation__item--active`)) {
+    statsButton.classList.remove(`main-navigation__item--active`);
+    STATS.classList.add(`visually-hidden`);
+    FILMS.classList.remove(`visually-hidden`);
+  }
+};
+
 const createFilters = (data) => {
   FILTERS_CONTAINER.querySelectorAll(`.main-navigation__item:not(.main-navigation__item--additional)`)
     .forEach((item) => item.parentElement.removeChild(item));
   const fragment = document.createDocumentFragment();
+  let filters = [];
 
   CardsFilters.forEach(function (item) {
     const filter = new Filter(item);
     filter.render();
     const filteredData = filterTypes(data)[filter.id]();
     filter.setCount(filteredData);
+    filters.push(filter);
 
     filter.onFilter = () => {
       SEARCH_INPUT.value = ``;
+      filters.forEach((i) => i.setInactive());
+      hideStatsOnFilter();
+      filter.setActive();
       renderCards(CARDS_CONTAINER, filteredData);
 
       if (filteredData.length > Cards.STEP) {
@@ -243,6 +257,52 @@ const createCards = (data) => {
     let cardDetails = new CardDetails(item);
     card.render();
 
+    const onAddToWatchList = () => {
+      item.isInWatchlist = !item.isInWatchlist;
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+          return provider.getCards();
+        })
+        .then(updateFilter)
+        .catch((err) => {
+          throw err;
+        });
+    };
+
+    const onMarkAsWatched = () => {
+      item.isWatched = !item.isWatched;
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+          return provider.getCards();
+        })
+        .then((newData) => {
+          cardsData = newData;
+          updateFilter(newData);
+          getProfileRating(newData);
+        })
+        .catch((err) => {
+          throw err;
+        });
+    };
+
+    const onAddToFavorite = () => {
+      item.isFavorite = !item.isFavorite;
+      provider.updateCard({id: card.id, data: card.toRAW(item)})
+        .then((newCard) => {
+          item = newCard;
+          cardDetails.update(item);
+          return provider.getCards();
+        })
+        .then(updateFilter)
+        .catch((err) => {
+          throw err;
+        });
+    };
+
     if (i < Cards.MAX_SHOW) {
       card.element.classList.remove(`visually-hidden`);
     }
@@ -311,95 +371,14 @@ const createCards = (data) => {
         });
     };
 
-    card.onAddToWatchList = () => {
-      item.isInWatchlist = !item.isInWatchlist;
-      provider.updateCard({id: card.id, data: card.toRAW(item)})
-        .then((newCard) => {
-          item = newCard;
-          cardDetails.update(item);
-          return provider.getCards();
-        })
-        .then(updateFilter)
-        .catch((err) => {
-          throw err;
-        });
-    };
+    card.onAddToWatchList = onAddToWatchList;
+    cardDetails.onAddToWatchList = onAddToWatchList;
 
-    cardDetails.onAddToWatchList = () => {
-      item.isInWatchlist = !item.isInWatchlist;
-      provider.updateCard({id: card.id, data: card.toRAW(item)})
-        .then((newCard) => {
-          item = newCard;
-          cardDetails.update(item);
-          return provider.getCards();
-        })
-        .then(updateFilter)
-        .catch((err) => {
-          throw err;
-        });
-    };
+    card.onMarkAsWatched = onMarkAsWatched;
+    cardDetails.onMarkAsWatched = onMarkAsWatched;
 
-    card.onMarkAsWatched = () => {
-      item.isWatched = !item.isWatched;
-      provider.updateCard({id: card.id, data: card.toRAW(item)})
-        .then((newCard) => {
-          item = newCard;
-          cardDetails.update(item);
-          return provider.getCards();
-        })
-        .then((newData) => {
-          updateFilter(newData);
-          getProfileRating(newData);
-        })
-        .catch((err) => {
-          throw err;
-        });
-    };
-
-    cardDetails.onMarkAsWatched = () => {
-      item.isWatched = !item.isWatched;
-      provider.updateCard({id: card.id, data: card.toRAW(item)})
-        .then((newCard) => {
-          item = newCard;
-          cardDetails.update(item);
-          return provider.getCards();
-        })
-        .then((newData) => {
-          updateFilter(newData);
-          getProfileRating(newData);
-        })
-        .catch((err) => {
-          throw err;
-        });
-    };
-
-    card.onAddToFavorite = () => {
-      item.isFavorite = !item.isFavorite;
-      provider.updateCard({id: card.id, data: card.toRAW(item)})
-        .then((newCard) => {
-          item = newCard;
-          cardDetails.update(item);
-          return provider.getCards();
-        })
-        .then(updateFilter)
-        .catch((err) => {
-          throw err;
-        });
-    };
-
-    cardDetails.onAddToFavorite = () => {
-      item.isFavorite = !item.isFavorite;
-      provider.updateCard({id: card.id, data: card.toRAW(item)})
-        .then((newCard) => {
-          item = newCard;
-          cardDetails.update(item);
-          return provider.getCards();
-        })
-        .then(updateFilter)
-        .catch((err) => {
-          throw err;
-        });
-    };
+    card.onAddToFavorite = onAddToFavorite;
+    cardDetails.onAddToFavorite = onAddToFavorite;
 
     fragment.appendChild(card.element);
   });
@@ -412,7 +391,6 @@ const renderCards = (container, data) => {
   container.appendChild(cards);
 };
 
-let cardsData = [];
 const onStatsButtonClick = (evt) => {
   evt.preventDefault();
   const active = FILTERS_CONTAINER.querySelector(`.main-navigation__item--active`);

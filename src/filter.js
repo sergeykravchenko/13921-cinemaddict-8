@@ -1,5 +1,4 @@
 import Component from './component';
-import {STATS, FILMS, statsButton} from './main';
 
 export default class Filter extends Component {
   constructor(data) {
@@ -26,6 +25,14 @@ export default class Filter extends Component {
     this._updateCount();
   }
 
+  setInactive() {
+    this._element.classList.remove(`main-navigation__item--active`);
+  }
+
+  setActive() {
+    this._element.classList.add(`main-navigation__item--active`);
+  }
+
   _updateCount() {
     const counter = this._element.querySelector(`.main-navigation__item-count`);
     counter.textContent = this._count;
@@ -36,20 +43,7 @@ export default class Filter extends Component {
     }
   }
 
-  _onFilterClick(evt) {
-    evt.preventDefault();
-    const target = evt.target.closest(`.main-navigation__item`);
-    const activeElement = target.parentElement.querySelector(`.main-navigation__item--active`);
-    if (activeElement) {
-      activeElement.classList.remove(`main-navigation__item--active`);
-    }
-    target.classList.add(`main-navigation__item--active`);
-
-    if (activeElement === statsButton) {
-      STATS.classList.add(`visually-hidden`);
-      FILMS.classList.remove(`visually-hidden`);
-    }
-
+  _onFilterClick() {
     if (typeof this._onFilter === `function`) {
       this._onFilter();
     }

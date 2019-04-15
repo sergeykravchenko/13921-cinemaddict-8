@@ -44,7 +44,6 @@ const filterTimes = (data) => ({
 });
 
 const statsInit = (data) => {
-  // let myChart = null;
   const stats = getStats(data);
   const BAR_HEIGHT = 50;
   const hours = (stats.totalDuration / 60).toFixed();

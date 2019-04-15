@@ -236,7 +236,7 @@ export default class cardDetails extends Component {
 
   defaultRatingBg() {
     const label = this._element.querySelector(`.film-details__user-rating-input:checked + label`);
-    this._setBgColor(label);
+    this._setBackgroundColor(label);
   }
 
   onRatingError() {
@@ -261,7 +261,7 @@ export default class cardDetails extends Component {
 
   defaultCommentBg() {
     const textarea = this._element.querySelector(`.film-details__comment-input`);
-    this._setBgColor(textarea);
+    this._setBackgroundColor(textarea);
   }
 
   onCommentError() {
@@ -392,7 +392,7 @@ export default class cardDetails extends Component {
     }, ANIMATION_TIMEOUT);
   }
 
-  _setBgColor(element, color = ``) {
+  _setBackgroundColor(element, color = ``) {
     element.style.backgroundColor = color;
   }
 
